@@ -238,7 +238,7 @@ function FilePreview({
         <img
           src={src}
           alt=""
-          className="size-full object-cover outline -outline-offset-1 outline-black/10 dark:outline-white/10"
+          className="ebu-preview-outline size-full object-cover"
         />
       ) : (
         <div className="flex size-full items-center justify-center">
@@ -495,10 +495,10 @@ export function createBulkUploadPage(
       labels.edit.replace("{locale}", locale.toUpperCase())
 
     return (
-      <main className="mx-auto max-w-7xl space-y-8 p-5 sm:p-8 lg:p-10">
+      <main className="ebu-main">
         <header className="max-w-3xl space-y-2">
           {labels.eyebrow && (
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-kumo-brand">
+            <p className="ebu-eyebrow text-xs font-semibold uppercase text-kumo-brand">
               {labels.eyebrow}
             </p>
           )}
@@ -509,10 +509,7 @@ export function createBulkUploadPage(
           >
             {labels.title}
           </Text>
-          <Text
-            variant="secondary"
-            DANGEROUS_className="max-w-2xl text-pretty leading-7"
-          >
+          <Text variant="secondary" DANGEROUS_className="max-w-2xl text-pretty">
             {labels.intro}
           </Text>
         </header>
@@ -536,7 +533,7 @@ export function createBulkUploadPage(
         )}
 
         {(sharedFields.length > 0 || config.translationLocale) && (
-          <LayerCard className="space-y-5 p-5 sm:p-6">
+          <LayerCard className="ebu-card space-y-5 p-5">
             <Text variant="heading3" as="h2" DANGEROUS_className="text-balance">
               {labels.defaults}
             </Text>
@@ -550,6 +547,10 @@ export function createBulkUploadPage(
                       placeholder={
                         resolveText(field.placeholder, lang) || undefined
                       }
+                      items={(terms[field.name] ?? []).map((term) => ({
+                        value: term.id,
+                        label: term.label,
+                      }))}
                       value={shared[field.name] || null}
                       loading={loading}
                       disabled={loading || isImporting}
@@ -560,16 +561,17 @@ export function createBulkUploadPage(
                         }))
                       }
                       size="lg"
-                    >
-                      {(terms[field.name] ?? []).map((term) => (
-                        <Select.Option key={term.id} value={term.id}>
-                          {term.label}
-                        </Select.Option>
-                      ))}
-                    </Select>
+                    />
                   )
                 }
-                const noneLabel = resolveText(field.noneLabel, lang)
+                const noneItem = field.noneLabel
+                  ? [
+                      {
+                        value: NONE_VALUE,
+                        label: resolveText(field.noneLabel, lang),
+                      },
+                    ]
+                  : []
                 return (
                   <Select
                     key={field.name}
@@ -577,6 +579,15 @@ export function createBulkUploadPage(
                     placeholder={
                       resolveText(field.placeholder, lang) || undefined
                     }
+                    items={[
+                      ...noneItem,
+                      ...(options[field.name] ?? []).map((entry) => ({
+                        value: entry.id,
+                        label: field.optionLabel
+                          ? field.optionLabel(entry, lang)
+                          : contentLabel(entry, field.labelKeys),
+                      })),
+                    ]}
                     value={
                       shared[field.name] ||
                       (field.noneLabel ? NONE_VALUE : null)
@@ -593,24 +604,11 @@ export function createBulkUploadPage(
                       }))
                     }
                     size="lg"
-                  >
-                    {field.noneLabel && (
-                      <Select.Option value={NONE_VALUE}>
-                        {noneLabel}
-                      </Select.Option>
-                    )}
-                    {(options[field.name] ?? []).map((entry) => (
-                      <Select.Option key={entry.id} value={entry.id}>
-                        {field.optionLabel
-                          ? field.optionLabel(entry, lang)
-                          : contentLabel(entry, field.labelKeys)}
-                      </Select.Option>
-                    ))}
-                  </Select>
+                  />
                 )
               })}
               {config.translationLocale && (
-                <div className="lg:col-span-3">
+                <div className="ebu-span-full">
                   <Checkbox
                     label={labels.translations}
                     controlFirst
@@ -632,7 +630,7 @@ export function createBulkUploadPage(
               {labels.files}
             </Text>
             <Badge variant="secondary" className="tabular-nums">
-              {rows.length} {labels.images}
+              {rows.length} {labels.count}
             </Badge>
           </div>
           <div
@@ -656,7 +654,7 @@ export function createBulkUploadPage(
               if (isImporting) return
               addFiles([...event.dataTransfer.files])
             }}
-            className={`rounded-2xl p-1 transition-[box-shadow,background-color] duration-150 ${
+            className={`ebu-dropzone p-1 ${
               isDragging
                 ? "bg-kumo-brand/10 ring-2 ring-kumo-brand"
                 : "bg-kumo-tint ring ring-kumo-line"
@@ -706,7 +704,7 @@ export function createBulkUploadPage(
               {rows.map((row, index) => (
                 <article key={row.id}>
                   <LayerCard className="space-y-4 p-4">
-                    <div className="grid gap-4 md:grid-cols-[5rem_minmax(0,1fr)_12rem_auto] md:items-start">
+                    <div className="ebu-row-grid">
                       <FilePreview file={row.file} aspectRatio={aspectRatio} />
                       <div className="min-w-0 space-y-2">
                         <div className="flex items-center gap-2">
@@ -778,7 +776,7 @@ export function createBulkUploadPage(
                           />
                         ))}
                       </div>
-                      <div className="flex min-h-10 items-center justify-between gap-2 md:flex-col md:items-end">
+                      <div className="ebu-row-status flex min-h-10 items-center justify-between gap-2">
                         <Badge
                           variant={statusVariant(row.status)}
                           appearance="dot"

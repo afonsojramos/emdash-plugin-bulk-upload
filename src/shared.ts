@@ -76,7 +76,8 @@ export interface BulkUploadLabels {
   drop: string
   chooseFiles: string
   hint: string
-  images: string
+  /** Suffix of the file-count badge, e.g. "12 files". */
+  count: string
   itemTitle: string
   queued: string
   uploading: string
@@ -106,8 +107,8 @@ export const DEFAULT_LABELS: BulkUploadLabels = {
   files: "Files",
   drop: "Drop files here",
   chooseFiles: "Choose files",
-  hint: "You can adjust every title below.",
-  images: "files",
+  hint: "You can adjust the details of every file below.",
+  count: "files",
   itemTitle: "Title",
   queued: "Ready",
   uploading: "Uploading",
@@ -121,7 +122,8 @@ export const DEFAULT_LABELS: BulkUploadLabels = {
   edit: "Edit {locale} draft",
   loadError: "Could not load options.",
   reload: "Try again",
-  incomplete: "Complete the shared details and every row before importing.",
+  incomplete:
+    "Complete the shared details and every file before creating drafts.",
   skipped: "Skipped {count} unsupported files.",
 }
 
