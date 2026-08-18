@@ -1,0 +1,58 @@
+{
+  "name": "emdash-plugin-bulk-upload",
+  "version": "0.1.0",
+  "description": "Bulk upload admin page for Emdash CMS: a drag-and-drop queue that creates a reviewed draft entry (with optional linked translation) for every uploaded file",
+  "type": "module",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./admin": "./src/admin.tsx"
+  },
+  "files": [
+    "src"
+  ],
+  "keywords": [
+    "emdash",
+    "cms",
+    "plugin",
+    "bulk-upload",
+    "media",
+    "admin"
+  ],
+  "author": "Afonso Jorge Ramos",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/afonsojramos/emdash-plugin-bulk-upload.git"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --test test/*.test.ts",
+    "lint": "oxlint .",
+    "format": "oxfmt src test"
+  },
+  "peerDependencies": {
+    "@cloudflare/kumo": ">=2",
+    "@emdash-cms/admin": ">=0.32.0 <1",
+    "emdash": ">=0.32.0 <1",
+    "react": ">=18"
+  },
+  "devDependencies": {
+    "@cloudflare/kumo": "2.6.0",
+    "@emdash-cms/admin": "^0.32.0",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.18",
+    "emdash": "^0.32.0",
+    "react": "^19.2.8",
+    "oxfmt": "^0.2.0",
+    "oxlint": "^1.42.0",
+    "typescript": "^6.0.3"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "nub",
+      "version": "^0.7.5",
+      "onFail": "ignore"
+    }
+  }
+}
