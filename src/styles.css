@@ -1,0 +1,66 @@
+/* Structural styles the Emdash admin's prebuilt stylesheet does not provide
+   (arbitrary values and responsive variants are never in the prebuilt CSS).
+   Import once from your admin entry:
+   `import "emdash-plugin-bulk-upload/styles.css"` */
+
+.ebu-main {
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 80rem;
+  padding: 1.25rem;
+}
+
+.ebu-eyebrow {
+  letter-spacing: 0.18em;
+}
+
+.ebu-dropzone {
+  border-radius: 1rem;
+  transition:
+    box-shadow 150ms,
+    background-color 150ms;
+}
+
+.ebu-row-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.ebu-preview-outline {
+  outline: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  outline-offset: -1px;
+}
+
+@media (min-width: 640px) {
+  .ebu-main {
+    padding: 2rem;
+  }
+
+  .ebu-card {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .ebu-row-grid {
+    grid-template-columns: 5rem minmax(0, 1fr) 12rem auto;
+    align-items: start;
+  }
+
+  .ebu-row-status {
+    flex-direction: column;
+    align-items: flex-end;
+  }
+}
+
+@media (min-width: 1024px) {
+  .ebu-main {
+    padding: 2.5rem;
+  }
+
+  .ebu-span-full {
+    grid-column: 1 / -1;
+  }
+}

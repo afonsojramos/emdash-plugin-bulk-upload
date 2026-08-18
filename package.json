@@ -6,7 +6,8 @@
   "main": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./admin": "./src/admin.tsx"
+    "./admin": "./src/admin.tsx",
+    "./styles.css": "./src/styles.css"
   },
   "files": [
     "src"

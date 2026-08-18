@@ -49,6 +49,7 @@ import {
   createBulkUploadAdmin,
   imageFieldValue,
 } from "emdash-plugin-bulk-upload/admin";
+import "emdash-plugin-bulk-upload/styles.css";
 
 export const { pages, fields } = createBulkUploadAdmin({
   collection: "gallery",
@@ -107,15 +108,15 @@ export const { pages, fields } = createBulkUploadAdmin({
 });
 ```
 
-### 3. Tailwind source
+### Styling
 
-The page is styled with Tailwind utilities and Kumo design tokens, compiled by your project's Tailwind build. Tailwind does not scan `node_modules` by default, so register the package as a source in your global CSS:
+The page uses Kumo components and utility classes that ship with the Emdash admin, plus a small stylesheet from this package for its own layout. Import it once in your admin entry (as in the example above):
 
-```css
-@source "../node_modules/emdash-plugin-bulk-upload/src";
+```ts
+import "emdash-plugin-bulk-upload/styles.css";
 ```
 
-(Adjust the relative path to your CSS file's location.)
+No Tailwind configuration is needed; the admin's prebuilt stylesheet does not include project-compiled utilities, which is why the package ships plain CSS for its structural rules.
 
 ## Configuration
 
