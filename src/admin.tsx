@@ -2,9 +2,11 @@ import {
   apiFetch,
   createContent,
   fetchContentList,
+  fetchManifest,
   fetchTerms,
   parseApiResponse,
   uploadMedia,
+  useLocale,
   type ContentItem,
   type MediaItem,
   type TaxonomyTerm,
@@ -50,6 +52,7 @@ export {
   imageFieldValue,
   normalizeMonth,
 } from "./shared.ts"
+export { BUILT_IN_LANGUAGES } from "./locales.ts"
 
 export interface SharedCollectionField {
   kind: "collection"
@@ -107,9 +110,13 @@ export interface BuildDataInput {
 export interface BulkUploadAdminConfig {
   /** Collection the drafts are created in. */
   collection: string
-  primaryLocale: string
-  /** Enables the linked-translation checkbox. */
-  translationLocale?: string
+  /** Locale of the primary drafts. Defaults to the site's default locale. */
+  primaryLocale?: string
+  /**
+   * Locales that get linked translation drafts. Defaults to every other
+   * configured site locale; pass `[]` to disable translations.
+   */
+  translationLocales?: string[]
   /** Initial state of the translation checkbox. Defaults to true. */
   translationsDefault?: boolean
   sharedFields?: SharedField[]
@@ -138,17 +145,18 @@ interface UploadRow {
   error?: string
   media?: MediaItem
   primaryEntryId?: string
-  translationEntryId?: string
+  /** Created translation draft ids keyed by locale. */
+  translationIds?: Record<string, string>
 }
 
-function adminLanguage(): string {
-  if (typeof document === "undefined") return "en"
-  return (document.documentElement.lang || "en").split("-")[0] || "en"
+interface ResolvedLocales {
+  primary?: string
+  translations: string[]
 }
 
 async function loadAllEntries(
   collection: string,
-  locale: string,
+  locale: string | undefined,
 ): Promise<ContentItem[]> {
   const items: ContentItem[] = []
   let cursor: string | undefined
@@ -274,9 +282,18 @@ export function createBulkUploadPage(
     acceptTypes.length > 0 &&
     acceptTypes.every((type) => type.startsWith("image/"))
   const aspectRatio = config.previewAspectRatio ?? "1 / 1"
+  const staticLocales: ResolvedLocales | null =
+    config.primaryLocale !== undefined &&
+    config.translationLocales !== undefined
+      ? {
+          primary: config.primaryLocale,
+          translations: config.translationLocales,
+        }
+      : null
 
   return function BulkUploadPage() {
-    const lang = adminLanguage()
+    const { locale: adminLocale } = useLocale()
+    const lang = (adminLocale || "en").split("-")[0] || "en"
     const labels = resolveLabels(config.languages, lang)
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [options, setOptions] = useState<Record<string, ContentItem[]>>({})
@@ -286,7 +303,12 @@ export function createBulkUploadPage(
       config.translationsDefault ?? true,
     )
     const [rows, setRows] = useState<UploadRow[]>([])
-    const [loading, setLoading] = useState(sharedFields.length > 0)
+    const [locales, setLocales] = useState<ResolvedLocales | null>(
+      staticLocales,
+    )
+    const [loading, setLoading] = useState(
+      sharedFields.length > 0 || staticLocales === null,
+    )
     const [loadError, setLoadError] = useState<string | null>(null)
     const [reloadKey, setReloadKey] = useState(0)
     const [skippedCount, setSkippedCount] = useState(0)
@@ -295,39 +317,55 @@ export function createBulkUploadPage(
     const dragDepth = useRef(0)
 
     useEffect(() => {
-      if (sharedFields.length === 0) return
+      if (sharedFields.length === 0 && staticLocales !== null) return
       let cancelled = false
       setLoading(true)
       setLoadError(null)
-      Promise.all([
-        Promise.all(
-          collectionFields.map(async (field) => {
-            const entries = await loadAllEntries(
-              field.collection,
-              config.primaryLocale,
-            )
-            const filtered = (
-              field.filter ? entries.filter(field.filter) : entries
-            ).sort((a, b) =>
-              contentLabel(a, field.labelKeys).localeCompare(
-                contentLabel(b, field.labelKeys),
-                config.primaryLocale,
-              ),
-            )
-            return [field.name, filtered] as const
-          }),
-        ),
-        Promise.all(
-          taxonomyFields.map(async (field) => {
-            const items = await fetchTerms(field.taxonomy, {
-              locale: config.primaryLocale,
-            })
-            return [field.name, items] as const
-          }),
-        ),
-      ])
-        .then(([collectionResults, taxonomyResults]) => {
+      const load = async () => {
+        let resolved = staticLocales
+        if (!resolved) {
+          const manifest = await fetchManifest()
+          const primary = config.primaryLocale ?? manifest.i18n?.defaultLocale
+          resolved = {
+            primary,
+            translations:
+              config.translationLocales ??
+              (manifest.i18n
+                ? manifest.i18n.locales.filter((locale) => locale !== primary)
+                : []),
+          }
+        }
+        const primary = resolved.primary
+        const [collectionResults, taxonomyResults] = await Promise.all([
+          Promise.all(
+            collectionFields.map(async (field) => {
+              const entries = await loadAllEntries(field.collection, primary)
+              const filtered = (
+                field.filter ? entries.filter(field.filter) : entries
+              ).sort((a, b) =>
+                contentLabel(a, field.labelKeys).localeCompare(
+                  contentLabel(b, field.labelKeys),
+                  primary,
+                ),
+              )
+              return [field.name, filtered] as const
+            }),
+          ),
+          Promise.all(
+            taxonomyFields.map(async (field) => {
+              const items = await fetchTerms(field.taxonomy, {
+                locale: primary,
+              })
+              return [field.name, items] as const
+            }),
+          ),
+        ])
+        return { resolved, collectionResults, taxonomyResults }
+      }
+      load()
+        .then(({ resolved, collectionResults, taxonomyResults }) => {
           if (cancelled) return
+          setLocales(resolved)
           setOptions(Object.fromEntries(collectionResults))
           setTerms(Object.fromEntries(taxonomyResults))
           setShared((current) => {
@@ -409,8 +447,10 @@ export function createBulkUploadPage(
       !hasIncompleteShared &&
       !hasInvalidRows
 
+    const translationLocales = locales?.translations ?? []
+
     const importRows = async () => {
-      if (!canImport) return
+      if (!canImport || !locales) return
       setIsImporting(true)
       const pending = rows.filter((row) => row.status !== "done")
       const sharedValues = Object.fromEntries(
@@ -438,7 +478,7 @@ export function createBulkUploadPage(
             const primary = await createContent(config.collection, {
               data,
               status: "draft",
-              locale: config.primaryLocale,
+              locale: locales.primary,
             })
             working.primaryEntryId = primary.id
             patchRow(working.id, { primaryEntryId: primary.id })
@@ -456,18 +496,21 @@ export function createBulkUploadPage(
             }
           }
 
-          if (
-            config.translationLocale &&
-            createTranslations &&
-            !working.translationEntryId
-          ) {
-            const translation = await createContent(config.collection, {
-              data,
-              status: "draft",
-              locale: config.translationLocale,
-              translationOf: working.primaryEntryId,
-            })
-            working.translationEntryId = translation.id
+          if (createTranslations && translationLocales.length > 0) {
+            const created = { ...working.translationIds }
+            for (const locale of translationLocales) {
+              if (!created[locale]) {
+                const translation = await createContent(config.collection, {
+                  data,
+                  status: "draft",
+                  locale,
+                  translationOf: working.primaryEntryId,
+                })
+                created[locale] = translation.id
+                working.translationIds = created
+                patchRow(working.id, { translationIds: { ...created } })
+              }
+            }
           }
 
           patchRow(working.id, {
@@ -475,7 +518,7 @@ export function createBulkUploadPage(
             error: undefined,
             media: working.media,
             primaryEntryId: working.primaryEntryId,
-            translationEntryId: working.translationEntryId,
+            translationIds: working.translationIds,
           })
         } catch (error: unknown) {
           patchRow(working.id, {
@@ -483,7 +526,7 @@ export function createBulkUploadPage(
             error: error instanceof Error ? error.message : String(error),
             media: working.media,
             primaryEntryId: working.primaryEntryId,
-            translationEntryId: working.translationEntryId,
+            translationIds: working.translationIds,
           })
         }
       }
@@ -491,8 +534,10 @@ export function createBulkUploadPage(
     }
 
     const hasErrors = rows.some((row) => row.status === "error")
-    const editLabel = (locale: string) =>
-      labels.edit.replace("{locale}", locale.toUpperCase())
+    const editLabel = (locale: string | undefined) =>
+      labels.edit
+        .replace("{locale}", locale ? locale.toUpperCase() : "")
+        .replace(/\s{2,}/g, " ")
 
     return (
       <main className="ebu-main">
@@ -532,7 +577,7 @@ export function createBulkUploadPage(
           </div>
         )}
 
-        {(sharedFields.length > 0 || config.translationLocale) && (
+        {(sharedFields.length > 0 || translationLocales.length > 0) && (
           <LayerCard className="ebu-card space-y-5 p-5">
             <Text variant="heading3" as="h2" DANGEROUS_className="text-balance">
               {labels.defaults}
@@ -607,7 +652,7 @@ export function createBulkUploadPage(
                   />
                 )
               })}
-              {config.translationLocale && (
+              {translationLocales.length > 0 && (
                 <div className="ebu-span-full">
                   <Checkbox
                     label={labels.translations}
@@ -730,21 +775,27 @@ export function createBulkUploadPage(
                               <LinkButton
                                 size="sm"
                                 variant="ghost"
-                                href={`/_emdash/admin/content/${config.collection}/${row.primaryEntryId}?locale=${config.primaryLocale}`}
+                                href={`/_emdash/admin/content/${config.collection}/${row.primaryEntryId}${
+                                  locales?.primary
+                                    ? `?locale=${locales.primary}`
+                                    : ""
+                                }`}
                               >
-                                {editLabel(config.primaryLocale)}
+                                {editLabel(locales?.primary)}
                               </LinkButton>
                             )}
-                            {row.translationEntryId &&
-                              config.translationLocale && (
+                            {Object.entries(row.translationIds ?? {}).map(
+                              ([locale, entryId]) => (
                                 <LinkButton
+                                  key={locale}
                                   size="sm"
                                   variant="ghost"
-                                  href={`/_emdash/admin/content/${config.collection}/${row.translationEntryId}?locale=${config.translationLocale}`}
+                                  href={`/_emdash/admin/content/${config.collection}/${entryId}?locale=${locale}`}
                                 >
-                                  {editLabel(config.translationLocale)}
+                                  {editLabel(locale)}
                                 </LinkButton>
-                              )}
+                              ),
+                            )}
                           </div>
                         )}
                       </div>
