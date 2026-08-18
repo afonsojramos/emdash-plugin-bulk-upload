@@ -4,6 +4,18 @@ export function isValidMonth(value: string): boolean {
   return MONTH_PATTERN.test(value.trim())
 }
 
+const ISO_DATE_PATTERN =
+  /^(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])(?:T.*)?$/
+
+/** Coerce a stored value to `YYYY-MM`, accepting legacy full ISO dates. */
+export function normalizeMonth(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined
+  const trimmed = value.trim()
+  if (MONTH_PATTERN.test(trimmed)) return trimmed
+  const legacy = trimmed.match(ISO_DATE_PATTERN)
+  return legacy ? `${legacy[1]}-${legacy[2]}` : undefined
+}
+
 export function currentMonth(now: Date = new Date()): string {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
 }
@@ -78,7 +90,10 @@ export interface BulkUploadLabels {
   /** `{locale}` is replaced with the uppercased entry locale. */
   edit: string
   loadError: string
+  reload: string
   incomplete: string
+  /** `{count}` is replaced with the number of files that were not accepted. */
+  skipped: string
 }
 
 export const DEFAULT_LABELS: BulkUploadLabels = {
@@ -105,7 +120,9 @@ export const DEFAULT_LABELS: BulkUploadLabels = {
   importing: "Working…",
   edit: "Edit {locale} draft",
   loadError: "Could not load options.",
+  reload: "Try again",
   incomplete: "Complete the shared details and every row before importing.",
+  skipped: "Skipped {count} unsupported files.",
 }
 
 /** A plain string, or a map of admin language to string with English fallback. */

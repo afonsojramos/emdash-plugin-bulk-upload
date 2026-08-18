@@ -7,6 +7,7 @@ import {
   defaultTitleFromFilename,
   imageFieldValue,
   isValidMonth,
+  normalizeMonth,
   resolveLabels,
   resolveText,
 } from "../src/shared.ts"
@@ -38,6 +39,24 @@ describe("isValidMonth", () => {
     assert.equal(isValidMonth("2026-13"), false)
     assert.equal(isValidMonth("2026-08-18"), false)
     assert.equal(isValidMonth("junho 2024"), false)
+  })
+})
+
+describe("normalizeMonth", () => {
+  it("keeps valid months", () => {
+    assert.equal(normalizeMonth("2026-08"), "2026-08")
+    assert.equal(normalizeMonth(" 2026-08 "), "2026-08")
+  })
+
+  it("coerces legacy ISO dates to months", () => {
+    assert.equal(normalizeMonth("2024-06-15"), "2024-06")
+    assert.equal(normalizeMonth("2024-06-15T10:00:00Z"), "2024-06")
+  })
+
+  it("rejects everything else", () => {
+    assert.equal(normalizeMonth("junho 2024"), undefined)
+    assert.equal(normalizeMonth(42), undefined)
+    assert.equal(normalizeMonth(null), undefined)
   })
 })
 

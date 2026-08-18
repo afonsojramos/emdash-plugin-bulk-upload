@@ -31,6 +31,7 @@ import {
   currentMonth,
   defaultTitleFromFilename,
   isValidMonth,
+  normalizeMonth,
   resolveLabels,
   resolveText,
   type BulkUploadLabels,
@@ -43,9 +44,11 @@ export type {
   UploadedMedia,
 } from "./shared.ts"
 export {
+  contentLabel,
   DEFAULT_LABELS,
   defaultTitleFromFilename,
   imageFieldValue,
+  normalizeMonth,
 } from "./shared.ts"
 
 export interface SharedCollectionField {
@@ -75,6 +78,8 @@ export interface SharedTaxonomyField {
   taxonomy: string
   /** Term preselected by slug; falls back to the first term. */
   defaultSlug?: string
+  /** Allow importing with no term selected. Empty taxonomies never block. */
+  optional?: boolean
 }
 
 export type SharedField = SharedCollectionField | SharedTaxonomyField
@@ -215,7 +220,10 @@ function FilePreview({
   const [src, setSrc] = useState("")
 
   useEffect(() => {
-    if (!file.type.startsWith("image/")) return
+    if (!file.type.startsWith("image/")) {
+      setSrc("")
+      return
+    }
     const objectUrl = URL.createObjectURL(file)
     setSrc(objectUrl)
     return () => URL.revokeObjectURL(objectUrl)
@@ -235,7 +243,9 @@ function FilePreview({
       ) : (
         <div className="flex size-full items-center justify-center">
           <Text variant="secondary" size="xs">
-            {file.name.split(".").pop()?.toUpperCase() ?? ""}
+            {file.name.includes(".")
+              ? (file.name.split(".").pop()?.toUpperCase() ?? "")
+              : ""}
           </Text>
         </div>
       )}
@@ -256,7 +266,13 @@ export function createBulkUploadPage(
   )
   const titleFromFilename = config.titleFromFilename ?? defaultTitleFromFilename
   const accept = config.accept ?? "image/*"
-  const imagesOnly = accept.includes("image/")
+  const acceptTypes = accept
+    .split(",")
+    .map((type) => type.trim())
+    .filter(Boolean)
+  const imagesOnly =
+    acceptTypes.length > 0 &&
+    acceptTypes.every((type) => type.startsWith("image/"))
   const aspectRatio = config.previewAspectRatio ?? "1 / 1"
 
   return function BulkUploadPage() {
@@ -272,12 +288,17 @@ export function createBulkUploadPage(
     const [rows, setRows] = useState<UploadRow[]>([])
     const [loading, setLoading] = useState(sharedFields.length > 0)
     const [loadError, setLoadError] = useState<string | null>(null)
+    const [reloadKey, setReloadKey] = useState(0)
+    const [skippedCount, setSkippedCount] = useState(0)
     const [isImporting, setIsImporting] = useState(false)
     const [isDragging, setIsDragging] = useState(false)
+    const dragDepth = useRef(0)
 
     useEffect(() => {
       if (sharedFields.length === 0) return
       let cancelled = false
+      setLoading(true)
+      setLoadError(null)
       Promise.all([
         Promise.all(
           collectionFields.map(async (field) => {
@@ -316,18 +337,17 @@ export function createBulkUploadPage(
                 (candidate) => candidate.name === name,
               )
               next[name] =
-                items.find((term) => term.slug === field?.defaultSlug)?.id ??
-                items[0]?.id ??
-                ""
+                next[name] ||
+                (items.find((term) => term.slug === field?.defaultSlug)?.id ??
+                  items[0]?.id ??
+                  "")
             }
             return next
           })
         })
         .catch((error: unknown) => {
           if (!cancelled) {
-            setLoadError(
-              error instanceof Error ? error.message : labels.loadError,
-            )
+            setLoadError(error instanceof Error ? error.message : String(error))
           }
         })
         .finally(() => {
@@ -336,12 +356,13 @@ export function createBulkUploadPage(
       return () => {
         cancelled = true
       }
-    }, [labels.loadError])
+    }, [reloadKey])
 
     const addFiles = useCallback((files: File[]) => {
       const accepted = imagesOnly
         ? files.filter((file) => file.type.startsWith("image/"))
         : files
+      setSkippedCount(files.length - accepted.length)
       setRows((current) => {
         const existing = new Set(current.map((row) => row.id))
         const additions = accepted
@@ -374,7 +395,13 @@ export function createBulkUploadPage(
     const hasIncompleteShared =
       collectionFields.some(
         (field) => !field.noneLabel && !shared[field.name],
-      ) || taxonomyFields.some((field) => !shared[field.name])
+      ) ||
+      taxonomyFields.some(
+        (field) =>
+          !field.optional &&
+          !shared[field.name] &&
+          (terms[field.name]?.length ?? 0) > 0,
+      )
     const canImport =
       !loading &&
       !isImporting &&
@@ -491,12 +518,21 @@ export function createBulkUploadPage(
         </header>
 
         {loadError && (
-          <Banner
-            role="alert"
-            variant="error"
-            title={labels.loadError}
-            description={loadError}
-          />
+          <div className="space-y-3">
+            <Banner
+              role="alert"
+              variant="error"
+              title={labels.loadError}
+              description={loadError}
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setReloadKey((key) => key + 1)}
+            >
+              {labels.reload}
+            </Button>
+          </div>
         )}
 
         {(sharedFields.length > 0 || config.translationLocale) && (
@@ -602,14 +638,20 @@ export function createBulkUploadPage(
           <div
             onDragEnter={(event) => {
               event.preventDefault()
+              dragDepth.current += 1
               setIsDragging(true)
             }}
             onDragOver={(event) => event.preventDefault()}
-            onDragLeave={(event) => {
-              if (event.currentTarget === event.target) setIsDragging(false)
+            onDragLeave={() => {
+              dragDepth.current -= 1
+              if (dragDepth.current <= 0) {
+                dragDepth.current = 0
+                setIsDragging(false)
+              }
             }}
             onDrop={(event) => {
               event.preventDefault()
+              dragDepth.current = 0
               setIsDragging(false)
               if (isImporting) return
               addFiles([...event.dataTransfer.files])
@@ -647,6 +689,17 @@ export function createBulkUploadPage(
               className="rounded-xl bg-kumo-base"
             />
           </div>
+
+          {skippedCount > 0 && (
+            <Banner
+              role="status"
+              variant="alert"
+              description={labels.skipped.replace(
+                "{count}",
+                String(skippedCount),
+              )}
+            />
+          )}
 
           {rows.length > 0 ? (
             <div className="space-y-3">
@@ -706,14 +759,22 @@ export function createBulkUploadPage(
                             type={field.type === "month" ? "month" : "text"}
                             value={row.values[field.name] ?? ""}
                             disabled={isImporting || row.status === "done"}
-                            onChange={(event) =>
-                              patchRow(row.id, {
-                                values: {
-                                  ...row.values,
-                                  [field.name]: event.target.value,
-                                },
-                              })
-                            }
+                            onChange={(event) => {
+                              const value = event.target.value
+                              setRows((current) =>
+                                current.map((item) =>
+                                  item.id === row.id
+                                    ? {
+                                        ...item,
+                                        values: {
+                                          ...item.values,
+                                          [field.name]: value,
+                                        },
+                                      }
+                                    : item,
+                                ),
+                              )
+                            }}
                           />
                         ))}
                       </div>
@@ -803,12 +864,7 @@ export interface MonthYearFieldOptions {
 export function createMonthYearField(
   options?: MonthYearFieldOptions,
 ): ComponentType<FieldWidgetProps> {
-  const normalize =
-    options?.normalize ??
-    ((value: unknown) =>
-      typeof value === "string" && isValidMonth(value)
-        ? value.trim()
-        : undefined)
+  const normalize = options?.normalize ?? normalizeMonth
 
   return function MonthYearField({
     value,
