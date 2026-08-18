@@ -11,6 +11,7 @@ import {
   resolveLabels,
   resolveText,
 } from "../src/shared.ts"
+import { BUILT_IN_LANGUAGES } from "../src/locales.ts"
 
 describe("defaultTitleFromFilename", () => {
   it("strips the extension and humanizes separators", () => {
@@ -114,13 +115,16 @@ describe("resolveText", () => {
 })
 
 describe("resolveLabels", () => {
-  it("merges language overrides over the defaults", () => {
-    const labels = resolveLabels(
-      { pt: { title: "Carregamento em lote" } },
-      "pt",
-    )
-    assert.equal(labels.title, "Carregamento em lote")
-    assert.equal(labels.import, DEFAULT_LABELS.import)
+  it("applies built-in language catalogs over the English defaults", () => {
+    const labels = resolveLabels(undefined, "pt")
+    assert.equal(labels.title, BUILT_IN_LANGUAGES.pt?.title)
+    assert.equal(labels.eyebrow, DEFAULT_LABELS.eyebrow)
+  })
+
+  it("lets host overrides win over the built-in catalog", () => {
+    const labels = resolveLabels({ pt: { title: "Cartazes em lote" } }, "pt")
+    assert.equal(labels.title, "Cartazes em lote")
+    assert.equal(labels.import, BUILT_IN_LANGUAGES.pt?.import)
   })
 
   it("returns defaults for unknown languages", () => {
@@ -128,6 +132,17 @@ describe("resolveLabels", () => {
       resolveLabels({ pt: { title: "x" } }, "de"),
       DEFAULT_LABELS,
     )
+  })
+
+  it("has every label translated in each built-in catalog", () => {
+    for (const [language, catalog] of Object.entries(BUILT_IN_LANGUAGES)) {
+      for (const key of Object.keys(DEFAULT_LABELS)) {
+        assert.ok(
+          key in catalog || key === "eyebrow",
+          `missing "${key}" in built-in "${language}" catalog`,
+        )
+      }
+    }
   })
 })
 

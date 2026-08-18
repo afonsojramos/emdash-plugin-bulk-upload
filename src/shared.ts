@@ -1,3 +1,5 @@
+import { BUILT_IN_LANGUAGES } from "./locales.ts"
+
 export const MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/
 
 export function isValidMonth(value: string): boolean {
@@ -144,7 +146,11 @@ export function resolveLabels(
   languages: Record<string, Partial<BulkUploadLabels>> | undefined,
   lang: string,
 ): BulkUploadLabels {
-  return { ...DEFAULT_LABELS, ...languages?.[lang] }
+  return {
+    ...DEFAULT_LABELS,
+    ...BUILT_IN_LANGUAGES[lang],
+    ...languages?.[lang],
+  }
 }
 
 export interface LabeledEntry {
