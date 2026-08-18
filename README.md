@@ -147,9 +147,19 @@ The page is styled with Tailwind utilities and Kumo design tokens, compiled by y
 | `monthYearField` | `false` | Export the `month-year` widget (`true` or `{ normalize }`) |
 | `path` | `"/bulk-upload"` | Page key; must match the descriptor |
 
-**Shared fields** come in two kinds. `kind: "collection"` loads options from another collection and passes the selected entry id to `buildData` under `shared[name]`; add `noneLabel` to make it optional. `kind: "taxonomy"` loads taxonomy terms and assigns the selected term to each created primary entry after creation. Labels and placeholders accept a plain string or a `{ lang: string }` map.
+**Shared fields** come in two kinds. `kind: "collection"` loads options from another collection and passes the selected entry id to `buildData` under `shared[name]`; add `noneLabel` to make it optional. `kind: "taxonomy"` loads taxonomy terms and assigns the selected term to each created primary entry after creation; set `optional: true` to allow importing without a term, and a taxonomy with no terms never blocks the import. Labels and placeholders accept a plain string or a `{ lang: string }` map.
 
 The admin language is detected from `document.documentElement.lang`; anything without an override falls back to English.
+
+### The `month-year` field widget
+
+With `monthYearWidget` (descriptor) and `monthYearField` (admin entry) enabled, the plugin registers a `YYYY-MM` month picker for `string`/`text` schema fields. Emdash schema fields reference widgets as `"<pluginId>:<widgetName>"`, so with the default plugin id set the field's widget to:
+
+```
+bulk-upload:month-year
+```
+
+(If you pass a custom `id` to `bulkUpload()`, the reference is `<your-id>:month-year`.) By default the widget accepts stored `YYYY-MM` values and coerces legacy full ISO dates (`2024-06-15` → `2024-06`); pass `monthYearField: { normalize }` to customise.
 
 ## License
 
