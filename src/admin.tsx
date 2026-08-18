@@ -66,7 +66,7 @@ export interface SharedCollectionField {
   labelKeys?: string[]
   /** Drop entries from the options list. */
   filter?: (entry: ContentItem) => boolean
-  /** Override the rendered option label. */
+  /** Override the rendered option label. `lang` is the full admin locale code. */
   optionLabel?: (entry: ContentItem, lang: string) => string
   /** Adds a "none" option and makes the field optional. */
   noneLabel?: LocalizedText
@@ -293,7 +293,7 @@ export function createBulkUploadPage(
 
   return function BulkUploadPage() {
     const { locale: adminLocale } = useLocale()
-    const lang = (adminLocale || "en").split("-")[0] || "en"
+    const lang = adminLocale || "en"
     const labels = resolveLabels(config.languages, lang)
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [options, setOptions] = useState<Record<string, ContentItem[]>>({})

@@ -109,6 +109,14 @@ describe("resolveText", () => {
     assert.equal(resolveText({ pt: "Local" }, "fr"), "Local")
   })
 
+  it("falls back from a regional code to its base language", () => {
+    assert.equal(resolveText({ en: "Location", pt: "Local" }, "pt-BR"), "Local")
+    assert.equal(
+      resolveText({ pt: "Local", "pt-BR": "Localização" }, "pt-BR"),
+      "Localização",
+    )
+  })
+
   it("returns the fallback when undefined", () => {
     assert.equal(resolveText(undefined, "pt", "x"), "x")
   })
@@ -129,9 +137,25 @@ describe("resolveLabels", () => {
 
   it("returns defaults for unknown languages", () => {
     assert.deepEqual(
-      resolveLabels({ pt: { title: "x" } }, "de"),
+      resolveLabels({ pt: { title: "x" } }, "vi"),
       DEFAULT_LABELS,
     )
+  })
+
+  it("layers regional catalogs over the base language", () => {
+    assert.equal(
+      resolveLabels(undefined, "pt").hint,
+      BUILT_IN_LANGUAGES.pt?.hint,
+    )
+    assert.equal(
+      resolveLabels(undefined, "pt-BR").hint,
+      BUILT_IN_LANGUAGES["pt-BR"]?.hint,
+    )
+    assert.notEqual(
+      resolveLabels(undefined, "zh-CN").title,
+      resolveLabels(undefined, "zh-TW").title,
+    )
+    assert.equal(resolveLabels({ pt: { title: "x" } }, "pt-BR").title, "x")
   })
 
   it("has every label translated in each built-in catalog", () => {

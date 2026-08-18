@@ -65,7 +65,7 @@ export const { pages, fields } = createBulkUploadAdmin({
       optionLabel: (entry, lang) =>
         contentLabel(entry, ["city"]) +
         (entry.data.activity_status === "inactive"
-          ? lang === "pt" ? " (inativo)" : " (inactive)"
+          ? lang.startsWith("pt") ? " (inativo)" : " (inactive)"
           : ""),
     },
     {
@@ -150,7 +150,7 @@ No Tailwind configuration is needed; the admin's prebuilt stylesheet does not in
 
 **Locales** are resolved from Emdash itself: with no `primaryLocale`/`translationLocales` configured, the plugin reads the site's locale configuration from the admin manifest and creates the primary draft in the default locale plus a linked draft per remaining locale. Single-locale sites simply get no translation checkbox.
 
-**Admin language**: labels follow the Emdash admin's own language (the admin's locale switcher). English is the default catalog and the package ships built-in translations (currently `pt`); the host's `languages` map overrides both, and adding a language to the plugin is a pull request against `src/locales.ts`.
+**Admin language**: labels follow the Emdash admin's own language (the admin's locale switcher). English is the default catalog and the package ships built-in translations for every language the Emdash admin supports (ar, ca, de, es, eu, fa, fr, hu, id, ja, ko, nb, nl, pl, pt, pt-BR, sr, sv, th, tr, uk, zh-CN, zh-TW). Lookup tries the full locale code, then the base language; the host's `languages` map overrides both. Native-speaker corrections are welcome as pull requests against `src/locales.ts`.
 
 ### The `month-year` field widget
 

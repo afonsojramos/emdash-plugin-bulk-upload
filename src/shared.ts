@@ -129,8 +129,15 @@ export const DEFAULT_LABELS: BulkUploadLabels = {
   skipped: "Skipped {count} unsupported files.",
 }
 
-/** A plain string, or a map of admin language to string with English fallback. */
+/**
+ * A plain string, or a map of admin locale to string. Lookup tries the full
+ * locale code, then its base language, then English.
+ */
 export type LocalizedText = string | Record<string, string>
+
+export function baseLanguage(locale: string): string {
+  return locale.split("-")[0] || locale
+}
 
 export function resolveText(
   text: LocalizedText | undefined,
@@ -139,16 +146,25 @@ export function resolveText(
 ): string {
   if (text == null) return fallback
   if (typeof text === "string") return text
-  return text[lang] ?? text.en ?? Object.values(text)[0] ?? fallback
+  return (
+    text[lang] ??
+    text[baseLanguage(lang)] ??
+    text.en ??
+    Object.values(text)[0] ??
+    fallback
+  )
 }
 
 export function resolveLabels(
   languages: Record<string, Partial<BulkUploadLabels>> | undefined,
   lang: string,
 ): BulkUploadLabels {
+  const base = baseLanguage(lang)
   return {
     ...DEFAULT_LABELS,
+    ...BUILT_IN_LANGUAGES[base],
     ...BUILT_IN_LANGUAGES[lang],
+    ...languages?.[base],
     ...languages?.[lang],
   }
 }
