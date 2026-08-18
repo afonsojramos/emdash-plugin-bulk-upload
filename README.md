@@ -9,6 +9,15 @@ Bulk upload admin page for [Emdash CMS](https://emdash.dev). Adds a drag-and-dro
 - Built with [Kumo](https://www.npmjs.com/package/@cloudflare/kumo), the same component system as the Emdash admin, so it looks native
 - Ships an optional `month-year` schema-field widget (`YYYY-MM` month picker)
 
+![Grid view: a queue of poster images as cards, with shared location, category, and author selects above](https://raw.githubusercontent.com/afonsojramos/emdash-plugin-bulk-upload/main/docs/grid-view.jpg)
+
+<details>
+<summary>List view</summary>
+
+![List view: the same queue as compact rows with title and month fields inline](https://raw.githubusercontent.com/afonsojramos/emdash-plugin-bulk-upload/main/docs/list-view.jpg)
+
+</details>
+
 ## Install
 
 ```sh
