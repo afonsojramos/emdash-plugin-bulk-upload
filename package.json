@@ -1,6 +1,6 @@
 {
   "name": "emdash-plugin-bulk-upload",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Bulk upload admin page for Emdash CMS: a drag-and-drop queue that creates a reviewed draft entry (with optional linked translation) for every uploaded file",
   "type": "module",
   "main": "src/index.ts",
