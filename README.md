@@ -53,8 +53,6 @@ import "emdash-plugin-bulk-upload/styles.css";
 
 export const { pages, fields } = createBulkUploadAdmin({
   collection: "gallery",
-  primaryLocale: "pt",
-  translationLocale: "en",
   sharedFields: [
     {
       kind: "collection",
@@ -135,9 +133,9 @@ No Tailwind configuration is needed; the admin's prebuilt stylesheet does not in
 | Option | Default | Description |
 | --- | --- | --- |
 | `collection` | required | Collection the drafts are created in |
-| `primaryLocale` | required | Locale of the primary drafts |
-| `translationLocale` | — | Enables the linked-translation checkbox |
-| `translationsDefault` | `true` | Initial state of that checkbox |
+| `primaryLocale` | site default locale | Locale of the primary drafts |
+| `translationLocales` | every other site locale | Locales that get linked translation drafts; `[]` disables them |
+| `translationsDefault` | `true` | Initial state of the translation checkbox |
 | `sharedFields` | `[]` | Selects shown once and applied to every entry (see below) |
 | `rowFields` | `[]` | Extra per-file inputs (`text` or `month`) |
 | `buildData` | required | `({ media, title, row, shared }) => data` payload for the entry |
@@ -150,7 +148,9 @@ No Tailwind configuration is needed; the admin's prebuilt stylesheet does not in
 
 **Shared fields** come in two kinds. `kind: "collection"` loads options from another collection and passes the selected entry id to `buildData` under `shared[name]`; add `noneLabel` to make it optional. `kind: "taxonomy"` loads taxonomy terms and assigns the selected term to each created primary entry after creation; set `optional: true` to allow importing without a term, and a taxonomy with no terms never blocks the import. Labels and placeholders accept a plain string or a `{ lang: string }` map.
 
-The admin language is detected from `document.documentElement.lang`; anything without an override falls back to English.
+**Locales** are resolved from Emdash itself: with no `primaryLocale`/`translationLocales` configured, the plugin reads the site's locale configuration from the admin manifest and creates the primary draft in the default locale plus a linked draft per remaining locale. Single-locale sites simply get no translation checkbox.
+
+**Admin language**: labels follow the Emdash admin's own language (the admin's locale switcher). English is the default catalog and the package ships built-in translations (currently `pt`); the host's `languages` map overrides both, and adding a language to the plugin is a pull request against `src/locales.ts`.
 
 ### The `month-year` field widget
 
