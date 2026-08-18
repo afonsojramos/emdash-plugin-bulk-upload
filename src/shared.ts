@@ -80,6 +80,8 @@ export interface BulkUploadLabels {
   hint: string
   /** Suffix of the file-count badge, e.g. "12 files". */
   count: string
+  listView: string
+  gridView: string
   itemTitle: string
   queued: string
   uploading: string
@@ -111,6 +113,8 @@ export const DEFAULT_LABELS: BulkUploadLabels = {
   chooseFiles: "Choose files",
   hint: "You can adjust the details of every file below.",
   count: "files",
+  listView: "List",
+  gridView: "Grid",
   itemTitle: "Title",
   queued: "Ready",
   uploading: "Uploading",

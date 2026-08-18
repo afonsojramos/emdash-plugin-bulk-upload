@@ -128,6 +128,11 @@ export interface BulkUploadAdminConfig {
   accept?: string
   /** CSS aspect-ratio of the preview thumbnails. Defaults to `1 / 1`. */
   previewAspectRatio?: string
+  /**
+   * Initial queue layout. The user's toggle choice is remembered per browser
+   * and wins over this. Defaults to `list`.
+   */
+  defaultView?: "list" | "grid"
   /** Per-language label overrides, merged over the English defaults. */
   languages?: Record<string, Partial<BulkUploadLabels>>
   /** Admin page path; must match the descriptor's page path. Defaults to `/bulk-upload`. */
@@ -218,12 +223,27 @@ function isRowFieldValid(field: RowField, value: string): boolean {
 
 const NONE_VALUE = "__none__"
 
+type QueueView = "list" | "grid"
+
+const VIEW_STORAGE_KEY = "emdash-bulk-upload-view"
+
+function storedView(): QueueView | null {
+  try {
+    const value = localStorage.getItem(VIEW_STORAGE_KEY)
+    return value === "list" || value === "grid" ? value : null
+  } catch {
+    return null
+  }
+}
+
 function FilePreview({
   file,
   aspectRatio,
+  className = "w-20",
 }: {
   file: File
   aspectRatio: string
+  className?: string
 }) {
   const [src, setSrc] = useState("")
 
@@ -239,7 +259,7 @@ function FilePreview({
 
   return (
     <div
-      className="w-20 shrink-0 overflow-hidden rounded-lg bg-kumo-tint shadow-sm"
+      className={`${className} shrink-0 overflow-hidden rounded-lg bg-kumo-tint shadow-sm`}
       style={{ aspectRatio }}
     >
       {src ? (
@@ -315,6 +335,18 @@ export function createBulkUploadPage(
     const [isImporting, setIsImporting] = useState(false)
     const [isDragging, setIsDragging] = useState(false)
     const dragDepth = useRef(0)
+    const [view, setView] = useState<QueueView>(
+      () => storedView() ?? config.defaultView ?? "list",
+    )
+
+    const changeView = (next: QueueView) => {
+      setView(next)
+      try {
+        localStorage.setItem(VIEW_STORAGE_KEY, next)
+      } catch {
+        // Storage can be unavailable (private browsing); the toggle still works.
+      }
+    }
 
     useEffect(() => {
       if (sharedFields.length === 0 && staticLocales !== null) return
@@ -674,9 +706,31 @@ export function createBulkUploadPage(
             <Text variant="heading3" as="h2" DANGEROUS_className="text-balance">
               {labels.files}
             </Text>
-            <Badge variant="secondary" className="tabular-nums">
-              {rows.length} {labels.count}
-            </Badge>
+            <div className="flex items-center gap-3">
+              <div className="ebu-view-toggle bg-kumo-tint">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={view === "list" ? "secondary" : "ghost"}
+                  aria-pressed={view === "list"}
+                  onClick={() => changeView("list")}
+                >
+                  {labels.listView}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={view === "grid" ? "secondary" : "ghost"}
+                  aria-pressed={view === "grid"}
+                  onClick={() => changeView("grid")}
+                >
+                  {labels.gridView}
+                </Button>
+              </div>
+              <Badge variant="secondary" className="tabular-nums">
+                {rows.length} {labels.count}
+              </Badge>
+            </div>
           </div>
           <div
             onDragEnter={(event) => {
@@ -745,122 +799,175 @@ export function createBulkUploadPage(
           )}
 
           {rows.length > 0 ? (
-            <div className="space-y-3">
-              {rows.map((row, index) => (
-                <article key={row.id}>
-                  <LayerCard className="space-y-4 p-4">
-                    <div className="ebu-row-grid">
-                      <FilePreview file={row.file} aspectRatio={aspectRatio} />
-                      <div className="min-w-0 space-y-2">
-                        <div className="flex items-center gap-2">
-                          <Badge variant="secondary" className="tabular-nums">
-                            {index + 1}
-                          </Badge>
-                          <Text variant="secondary" size="xs" truncate>
-                            {row.file.name}
-                          </Text>
-                        </div>
-                        <Input
-                          id={`bulk-upload-title-${index}`}
-                          label={labels.itemTitle}
-                          value={row.title}
-                          disabled={isImporting || row.status === "done"}
-                          onChange={(event) =>
-                            patchRow(row.id, { title: event.target.value })
-                          }
-                        />
-                        {row.status === "done" && (
-                          <div className="flex flex-wrap gap-2">
-                            {row.primaryEntryId && (
-                              <LinkButton
-                                size="sm"
-                                variant="ghost"
-                                href={`/_emdash/admin/content/${config.collection}/${row.primaryEntryId}${
-                                  locales?.primary
-                                    ? `?locale=${locales.primary}`
-                                    : ""
-                                }`}
-                              >
-                                {editLabel(locales?.primary)}
-                              </LinkButton>
-                            )}
-                            {Object.entries(row.translationIds ?? {}).map(
-                              ([locale, entryId]) => (
-                                <LinkButton
-                                  key={locale}
-                                  size="sm"
-                                  variant="ghost"
-                                  href={`/_emdash/admin/content/${config.collection}/${entryId}?locale=${locale}`}
-                                >
-                                  {editLabel(locale)}
-                                </LinkButton>
-                              ),
-                            )}
-                          </div>
-                        )}
-                      </div>
-                      <div className="space-y-4">
-                        {rowFields.map((field) => (
-                          <Input
-                            key={field.name}
-                            id={`bulk-upload-${field.name}-${index}`}
-                            label={resolveText(field.label, lang)}
-                            type={field.type === "month" ? "month" : "text"}
-                            value={row.values[field.name] ?? ""}
-                            disabled={isImporting || row.status === "done"}
-                            onChange={(event) => {
-                              const value = event.target.value
-                              setRows((current) =>
-                                current.map((item) =>
-                                  item.id === row.id
-                                    ? {
-                                        ...item,
-                                        values: {
-                                          ...item.values,
-                                          [field.name]: value,
-                                        },
-                                      }
-                                    : item,
-                                ),
-                              )
-                            }}
-                          />
-                        ))}
-                      </div>
-                      <div className="ebu-row-status flex min-h-10 items-center justify-between gap-2">
-                        <Badge
-                          variant={statusVariant(row.status)}
-                          appearance="dot"
+            <div className={view === "grid" ? "ebu-grid" : "space-y-3"}>
+              {rows.map((row, index) => {
+                const editable = !isImporting && row.status !== "done"
+                const titleInput = (
+                  <Input
+                    id={`bulk-upload-title-${index}`}
+                    label={labels.itemTitle}
+                    value={row.title}
+                    disabled={!editable}
+                    onChange={(event) =>
+                      patchRow(row.id, { title: event.target.value })
+                    }
+                  />
+                )
+                const fieldInputs = rowFields.map((field) => (
+                  <Input
+                    key={field.name}
+                    id={`bulk-upload-${field.name}-${index}`}
+                    label={resolveText(field.label, lang)}
+                    type={field.type === "month" ? "month" : "text"}
+                    value={row.values[field.name] ?? ""}
+                    disabled={!editable}
+                    onChange={(event) => {
+                      const value = event.target.value
+                      setRows((current) =>
+                        current.map((item) =>
+                          item.id === row.id
+                            ? {
+                                ...item,
+                                values: {
+                                  ...item.values,
+                                  [field.name]: value,
+                                },
+                              }
+                            : item,
+                        ),
+                      )
+                    }}
+                  />
+                ))
+                const statusBadge = (
+                  <Badge variant={statusVariant(row.status)} appearance="dot">
+                    {labels[row.status]}
+                  </Badge>
+                )
+                const removeButton =
+                  !row.primaryEntryId && row.status !== "done" ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary-destructive"
+                      disabled={isImporting}
+                      onClick={() =>
+                        setRows((current) =>
+                          current.filter((item) => item.id !== row.id),
+                        )
+                      }
+                    >
+                      {labels.remove}
+                    </Button>
+                  ) : null
+                const fileName = (
+                  <div className="min-w-0 flex-1">
+                    <Text variant="secondary" size="xs" truncate>
+                      {row.file.name}
+                    </Text>
+                  </div>
+                )
+                const indexBadge = (
+                  <Badge variant="secondary" className="tabular-nums">
+                    {index + 1}
+                  </Badge>
+                )
+                const editLinks =
+                  row.status === "done" ? (
+                    <div className="flex flex-wrap gap-2">
+                      {row.primaryEntryId && (
+                        <LinkButton
+                          size="sm"
+                          variant="ghost"
+                          href={`/_emdash/admin/content/${config.collection}/${row.primaryEntryId}${
+                            locales?.primary ? `?locale=${locales.primary}` : ""
+                          }`}
                         >
-                          {labels[row.status]}
-                        </Badge>
-                        {!row.primaryEntryId && row.status !== "done" && (
-                          <Button
-                            type="button"
+                          {editLabel(locales?.primary)}
+                        </LinkButton>
+                      )}
+                      {Object.entries(row.translationIds ?? {}).map(
+                        ([locale, entryId]) => (
+                          <LinkButton
+                            key={locale}
                             size="sm"
-                            variant="secondary-destructive"
-                            disabled={isImporting}
-                            onClick={() =>
-                              setRows((current) =>
-                                current.filter((item) => item.id !== row.id),
-                              )
-                            }
+                            variant="ghost"
+                            href={`/_emdash/admin/content/${config.collection}/${entryId}?locale=${locale}`}
                           >
-                            {labels.remove}
-                          </Button>
-                        )}
-                      </div>
+                            {editLabel(locale)}
+                          </LinkButton>
+                        ),
+                      )}
                     </div>
-                    {row.error && (
-                      <Banner
-                        role="alert"
-                        variant="error"
-                        description={row.error}
-                      />
-                    )}
-                  </LayerCard>
-                </article>
-              ))}
+                  ) : null
+                const errorBanner = row.error ? (
+                  <Banner
+                    role="alert"
+                    variant="error"
+                    description={row.error}
+                  />
+                ) : null
+
+                if (view === "grid") {
+                  return (
+                    <article key={row.id}>
+                      <LayerCard className="ebu-grid-card p-3">
+                        <FilePreview
+                          file={row.file}
+                          aspectRatio={aspectRatio}
+                          className="w-full"
+                        />
+                        <div className="flex items-center gap-2">
+                          {indexBadge}
+                          {fileName}
+                        </div>
+                        {titleInput}
+                        {fieldInputs}
+                        <div className="ebu-grid-footer">
+                          {statusBadge}
+                          {removeButton}
+                        </div>
+                        {editLinks}
+                        {errorBanner}
+                      </LayerCard>
+                    </article>
+                  )
+                }
+
+                return (
+                  <article key={row.id}>
+                    <LayerCard className="space-y-3 p-4">
+                      <div className="ebu-row-grid">
+                        <FilePreview
+                          file={row.file}
+                          aspectRatio={aspectRatio}
+                        />
+                        <div className="min-w-0 space-y-3">
+                          <div className="flex items-center gap-2">
+                            {indexBadge}
+                            {fileName}
+                            {statusBadge}
+                            {removeButton}
+                          </div>
+                          <div className="ebu-row-fields">
+                            <div className="ebu-field-title">{titleInput}</div>
+                            {fieldInputs.map((input, fieldIndex) => (
+                              <div
+                                key={rowFields[fieldIndex]?.name}
+                                className="ebu-field-extra"
+                              >
+                                {input}
+                              </div>
+                            ))}
+                          </div>
+                          {editLinks}
+                        </div>
+                      </div>
+                      {errorBanner}
+                    </LayerCard>
+                  </article>
+                )
+              })}
             </div>
           ) : null}
         </section>

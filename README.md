@@ -142,6 +142,7 @@ No Tailwind configuration is needed; the admin's prebuilt stylesheet does not in
 | `titleFromFilename` | humanized filename | Initial title for each file |
 | `accept` | `"image/*"` | File input accept attribute |
 | `previewAspectRatio` | `"1 / 1"` | CSS aspect-ratio of the thumbnails |
+| `defaultView` | `"list"` | Initial queue layout (`"list"` or `"grid"`); the user's toggle choice is remembered per browser |
 | `languages` | — | Per-language label overrides (English defaults built in) |
 | `monthYearField` | `false` | Export the `month-year` widget (`true` or `{ normalize }`) |
 | `path` | `"/bulk-upload"` | Page key; must match the descriptor |
