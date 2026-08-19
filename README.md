@@ -132,7 +132,7 @@ No Tailwind configuration is needed; the admin's prebuilt stylesheet does not in
 | Option | Default | Description |
 | --- | --- | --- |
 | `adminEntry` | required | Module specifier of your admin entry |
-| `id` | `"bulk-upload"` | Plugin id, for running more than one uploader |
+| `id` | `"emdash-plugin-bulk-upload"` | Plugin id, for running more than one uploader |
 | `page.path` | `"/bulk-upload"` | Admin page path (must match `path` in the admin config) |
 | `page.label` / `page.icon` | `"Bulk upload"` / `"upload"` | Navigation entry |
 | `monthYearWidget` | `false` | Register the `month-year` field widget (`true` or `{ label }`) |
@@ -167,7 +167,7 @@ No Tailwind configuration is needed; the admin's prebuilt stylesheet does not in
 With `monthYearWidget` (descriptor) and `monthYearField` (admin entry) enabled, the plugin registers a `YYYY-MM` month picker for `string`/`text` schema fields. Emdash schema fields reference widgets as `"<pluginId>:<widgetName>"`, so with the default plugin id set the field's widget to:
 
 ```
-bulk-upload:month-year
+emdash-plugin-bulk-upload:month-year
 ```
 
 (If you pass a custom `id` to `bulkUpload()`, the reference is `<your-id>:month-year`.) By default the widget accepts stored `YYYY-MM` values and coerces legacy full ISO dates (`2024-06-15` → `2024-06`); pass `monthYearField: { normalize }` to customise.

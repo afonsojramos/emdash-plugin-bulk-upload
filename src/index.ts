@@ -5,7 +5,7 @@ import type {
 } from "emdash"
 import { definePlugin } from "emdash"
 
-const PLUGIN_ID = "bulk-upload"
+const PLUGIN_ID = "emdash-plugin-bulk-upload"
 import { PLUGIN_VERSION } from "./version.ts"
 
 export interface BulkUploadPage {
