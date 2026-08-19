@@ -6,7 +6,7 @@ import type {
 import { definePlugin } from "emdash"
 
 const PLUGIN_ID = "bulk-upload"
-const VERSION = "0.1.0"
+import { PLUGIN_VERSION } from "./version.ts"
 
 export interface BulkUploadPage {
   path?: string
@@ -73,7 +73,7 @@ export function bulkUpload(options: BulkUploadPluginOptions): PluginDescriptor {
   const admin = resolveAdminOptions(options)
   return {
     id: admin.id,
-    version: VERSION,
+    version: PLUGIN_VERSION,
     format: "native",
     entrypoint: "emdash-plugin-bulk-upload",
     options: admin as unknown as Record<string, unknown>,
@@ -88,7 +88,7 @@ export function createPlugin(
 ): ResolvedPlugin {
   return definePlugin({
     id: options?.id ?? PLUGIN_ID,
-    version: VERSION,
+    version: PLUGIN_VERSION,
     admin: {
       pages: options?.pages ?? [
         { path: "/bulk-upload", label: "Bulk upload", icon: "upload" },
