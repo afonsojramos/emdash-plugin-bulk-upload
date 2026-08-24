@@ -10,24 +10,18 @@ import {
   type ContentItem,
   type MediaItem,
   type TaxonomyTerm,
-} from "@emdash-cms/admin"
-import { Badge, type BadgeVariant } from "@cloudflare/kumo/components/badge"
-import { Banner } from "@cloudflare/kumo/components/banner"
-import { Button, LinkButton } from "@cloudflare/kumo/components/button"
-import { Checkbox } from "@cloudflare/kumo/components/checkbox"
-import { Empty } from "@cloudflare/kumo/components/empty"
-import { Input } from "@cloudflare/kumo/components/input"
-import { LayerCard } from "@cloudflare/kumo/components/layer-card"
-import { Select } from "@cloudflare/kumo/components/select"
-import { Text } from "@cloudflare/kumo/components/text"
-import type { PluginAdminExports } from "emdash"
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type ComponentType,
-} from "react"
+} from "@emdash-cms/admin";
+import { Badge, type BadgeVariant } from "@cloudflare/kumo/components/badge";
+import { Banner } from "@cloudflare/kumo/components/banner";
+import { Button, LinkButton } from "@cloudflare/kumo/components/button";
+import { Checkbox } from "@cloudflare/kumo/components/checkbox";
+import { Empty } from "@cloudflare/kumo/components/empty";
+import { Input } from "@cloudflare/kumo/components/input";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Text } from "@cloudflare/kumo/components/text";
+import type { PluginAdminExports } from "emdash";
+import { useCallback, useEffect, useRef, useState, type ComponentType } from "react";
 import {
   contentLabel,
   currentMonth,
@@ -38,143 +32,139 @@ import {
   resolveText,
   type BulkUploadLabels,
   type LocalizedText,
-} from "./shared.ts"
+} from "./shared.ts";
 
-export type {
-  BulkUploadLabels,
-  LocalizedText,
-  UploadedMedia,
-} from "./shared.ts"
+export type { BulkUploadLabels, LocalizedText, UploadedMedia } from "./shared.ts";
 export {
   contentLabel,
   DEFAULT_LABELS,
   defaultTitleFromFilename,
   imageFieldValue,
   normalizeMonth,
-} from "./shared.ts"
-export { BUILT_IN_LANGUAGES } from "./locales.ts"
+} from "./shared.ts";
+export { BUILT_IN_LANGUAGES } from "./locales.ts";
 
 export interface SharedCollectionField {
-  kind: "collection"
+  kind: "collection";
   /** Key under which the selected entry id appears in `buildData`'s `shared` map. */
-  name: string
-  label: LocalizedText
-  placeholder?: LocalizedText
+  name: string;
+  label: LocalizedText;
+  placeholder?: LocalizedText;
   /** Collection to load options from (in the primary locale). */
-  collection: string
+  collection: string;
   /** Data keys tried in order for the option label. Defaults to `["name", "title"]`. */
-  labelKeys?: string[]
+  labelKeys?: string[];
   /** Drop entries from the options list. */
-  filter?: (entry: ContentItem) => boolean
+  filter?: (entry: ContentItem) => boolean;
   /** Override the rendered option label. `lang` is the full admin locale code. */
-  optionLabel?: (entry: ContentItem, lang: string) => string
+  optionLabel?: (entry: ContentItem, lang: string) => string;
   /** Adds a "none" option and makes the field optional. */
-  noneLabel?: LocalizedText
+  noneLabel?: LocalizedText;
 }
 
 export interface SharedTaxonomyField {
-  kind: "taxonomy"
+  kind: "taxonomy";
   /** Taxonomy assigned to each created primary entry. Not part of `buildData`. */
-  name: string
-  label: LocalizedText
-  placeholder?: LocalizedText
-  taxonomy: string
+  name: string;
+  label: LocalizedText;
+  placeholder?: LocalizedText;
+  taxonomy: string;
   /** Term preselected by slug; falls back to the first term. */
-  defaultSlug?: string
+  defaultSlug?: string;
   /** Allow importing with no term selected. Empty taxonomies never block. */
-  optional?: boolean
+  optional?: boolean;
 }
 
-export type SharedField = SharedCollectionField | SharedTaxonomyField
+export type SharedField = SharedCollectionField | SharedTaxonomyField;
 
 export interface RowField {
   /** Key under which the value appears in `buildData`'s `row` map. */
-  name: string
-  label: LocalizedText
+  name: string;
+  label: LocalizedText;
   /** `month` renders a month picker, validates `YYYY-MM`, and defaults to the current month. */
-  type?: "text" | "month"
-  defaultValue?: () => string
+  type?: "text" | "month";
+  defaultValue?: () => string;
   /** Required fields block the import while empty or invalid. Defaults to true. */
-  required?: boolean
+  required?: boolean;
 }
 
 export interface BuildDataInput {
-  media: MediaItem
-  title: string
+  media: MediaItem;
+  title: string;
   /** Per-row field values keyed by `RowField.name`. */
-  row: Record<string, string>
+  row: Record<string, string>;
   /** Selected entry ids keyed by `SharedCollectionField.name` (empty string when none). */
-  shared: Record<string, string>
+  shared: Record<string, string>;
 }
 
 export interface BulkUploadAdminConfig {
   /** Collection the drafts are created in. */
-  collection: string
+  collection: string;
   /** Locale of the primary drafts. Defaults to the site's default locale. */
-  primaryLocale?: string
+  primaryLocale?: string;
   /**
    * Locales that get linked translation drafts. Defaults to every other
    * configured site locale; pass `[]` to disable translations.
    */
-  translationLocales?: string[]
+  translationLocales?: string[];
   /** Initial state of the translation checkbox. Defaults to true. */
-  translationsDefault?: boolean
-  sharedFields?: SharedField[]
-  rowFields?: RowField[]
+  translationsDefault?: boolean;
+  sharedFields?: SharedField[];
+  rowFields?: RowField[];
   /** Map an uploaded file to the entry's `data` payload. */
-  buildData: (input: BuildDataInput) => Record<string, unknown>
-  titleFromFilename?: (filename: string) => string
+  buildData: (input: BuildDataInput) => Record<string, unknown>;
+  titleFromFilename?: (filename: string) => string;
   /** File input accept attribute. Defaults to `image/*`. */
-  accept?: string
+  accept?: string;
   /** CSS aspect-ratio of the preview thumbnails. Defaults to `1 / 1`. */
-  previewAspectRatio?: string
+  previewAspectRatio?: string;
   /**
    * Initial queue layout. The user's toggle choice is remembered per browser
    * and wins over this. Defaults to `list`.
    */
-  defaultView?: "list" | "grid"
+  defaultView?: "list" | "grid";
   /** Per-language label overrides, merged over the English defaults. */
-  languages?: Record<string, Partial<BulkUploadLabels>>
+  languages?: Record<string, Partial<BulkUploadLabels>>;
   /** Admin page path; must match the descriptor's page path. Defaults to `/bulk-upload`. */
-  path?: string
+  path?: string;
 }
 
-type UploadStatus = "queued" | "uploading" | "creating" | "done" | "error"
+type UploadStatus = "queued" | "uploading" | "creating" | "done" | "error";
 
 interface UploadRow {
-  id: string
-  file: File
-  title: string
-  values: Record<string, string>
-  status: UploadStatus
-  error?: string
-  media?: MediaItem
-  primaryEntryId?: string
+  id: string;
+  file: File;
+  title: string;
+  values: Record<string, string>;
+  status: UploadStatus;
+  error?: string;
+  media?: MediaItem;
+  primaryEntryId?: string;
   /** Created translation draft ids keyed by locale. */
-  translationIds?: Record<string, string>
+  translationIds?: Record<string, string>;
 }
 
 interface ResolvedLocales {
-  primary?: string
-  translations: string[]
+  primary?: string;
+  translations: string[];
 }
 
 async function loadAllEntries(
   collection: string,
   locale: string | undefined,
 ): Promise<ContentItem[]> {
-  const items: ContentItem[] = []
-  let cursor: string | undefined
+  const items: ContentItem[] = [];
+  let cursor: string | undefined;
   do {
     const page = await fetchContentList(collection, {
       cursor,
       limit: 100,
       locale,
-    })
-    items.push(...page.items)
-    cursor = page.nextCursor
-  } while (cursor)
-  return items
+    });
+    items.push(...page.items);
+    cursor = page.nextCursor;
+  } while (cursor);
+  return items;
 }
 
 async function assignTerms(
@@ -190,49 +180,48 @@ async function assignTerms(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ termIds }),
     },
-  )
-  await parseApiResponse(response, `Failed to assign the ${taxonomy} terms`)
+  );
+  await parseApiResponse(response, `Failed to assign the ${taxonomy} terms`);
 }
 
 function rowKey(file: File): string {
-  return `${file.name}:${file.size}:${file.lastModified}`
+  return `${file.name}:${file.size}:${file.lastModified}`;
 }
 
 function statusVariant(status: UploadStatus): BadgeVariant {
-  if (status === "done") return "success"
-  if (status === "error") return "error"
-  if (status === "uploading" || status === "creating") return "info"
-  return "neutral"
+  if (status === "done") return "success";
+  if (status === "error") return "error";
+  if (status === "uploading" || status === "creating") return "info";
+  return "neutral";
 }
 
 function initialRowValues(rowFields: RowField[]): Record<string, string> {
-  const values: Record<string, string> = {}
+  const values: Record<string, string> = {};
   for (const field of rowFields) {
-    values[field.name] =
-      field.defaultValue?.() ?? (field.type === "month" ? currentMonth() : "")
+    values[field.name] = field.defaultValue?.() ?? (field.type === "month" ? currentMonth() : "");
   }
-  return values
+  return values;
 }
 
 function isRowFieldValid(field: RowField, value: string): boolean {
   if (field.type === "month") {
-    return field.required === false && !value ? true : isValidMonth(value)
+    return field.required === false && !value ? true : isValidMonth(value);
   }
-  return field.required === false || Boolean(value.trim())
+  return field.required === false || Boolean(value.trim());
 }
 
-const NONE_VALUE = "__none__"
+const NONE_VALUE = "__none__";
 
-type QueueView = "list" | "grid"
+type QueueView = "list" | "grid";
 
-const VIEW_STORAGE_KEY = "emdash-bulk-upload-view"
+const VIEW_STORAGE_KEY = "emdash-bulk-upload-view";
 
 function storedView(): QueueView | null {
   try {
-    const value = localStorage.getItem(VIEW_STORAGE_KEY)
-    return value === "list" || value === "grid" ? value : null
+    const value = localStorage.getItem(VIEW_STORAGE_KEY);
+    return value === "list" || value === "grid" ? value : null;
   } catch {
-    return null
+    return null;
   }
 }
 
@@ -241,21 +230,21 @@ function FilePreview({
   aspectRatio,
   className = "w-20",
 }: {
-  file: File
-  aspectRatio: string
-  className?: string
+  file: File;
+  aspectRatio: string;
+  className?: string;
 }) {
-  const [src, setSrc] = useState("")
+  const [src, setSrc] = useState("");
 
   useEffect(() => {
     if (!file.type.startsWith("image/")) {
-      setSrc("")
-      return
+      setSrc("");
+      return;
     }
-    const objectUrl = URL.createObjectURL(file)
-    setSrc(objectUrl)
-    return () => URL.revokeObjectURL(objectUrl)
-  }, [file])
+    const objectUrl = URL.createObjectURL(file);
+    setSrc(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [file]);
 
   return (
     <div
@@ -263,178 +252,153 @@ function FilePreview({
       style={{ aspectRatio }}
     >
       {src ? (
-        <img
-          src={src}
-          alt=""
-          className="ebu-preview-outline size-full object-cover"
-        />
+        <img src={src} alt="" className="ebu-preview-outline size-full object-cover" />
       ) : (
         <div className="flex size-full items-center justify-center">
           <Text variant="secondary" size="xs">
-            {file.name.includes(".")
-              ? (file.name.split(".").pop()?.toUpperCase() ?? "")
-              : ""}
+            {file.name.includes(".") ? (file.name.split(".").pop()?.toUpperCase() ?? "") : ""}
           </Text>
         </div>
       )}
     </div>
-  )
+  );
 }
 
-export function createBulkUploadPage(
-  config: BulkUploadAdminConfig,
-): ComponentType {
-  const sharedFields = config.sharedFields ?? []
-  const rowFields = config.rowFields ?? []
+export function createBulkUploadPage(config: BulkUploadAdminConfig): ComponentType {
+  const sharedFields = config.sharedFields ?? [];
+  const rowFields = config.rowFields ?? [];
   const collectionFields = sharedFields.filter(
     (field): field is SharedCollectionField => field.kind === "collection",
-  )
+  );
   const taxonomyFields = sharedFields.filter(
     (field): field is SharedTaxonomyField => field.kind === "taxonomy",
-  )
-  const titleFromFilename = config.titleFromFilename ?? defaultTitleFromFilename
-  const accept = config.accept ?? "image/*"
+  );
+  const titleFromFilename = config.titleFromFilename ?? defaultTitleFromFilename;
+  const accept = config.accept ?? "image/*";
   const acceptTypes = accept
     .split(",")
     .map((type) => type.trim())
-    .filter(Boolean)
+    .filter(Boolean);
   const imagesOnly =
-    acceptTypes.length > 0 &&
-    acceptTypes.every((type) => type.startsWith("image/"))
-  const aspectRatio = config.previewAspectRatio ?? "1 / 1"
+    acceptTypes.length > 0 && acceptTypes.every((type) => type.startsWith("image/"));
+  const aspectRatio = config.previewAspectRatio ?? "1 / 1";
   const staticLocales: ResolvedLocales | null =
-    config.primaryLocale !== undefined &&
-    config.translationLocales !== undefined
+    config.primaryLocale !== undefined && config.translationLocales !== undefined
       ? {
           primary: config.primaryLocale,
           translations: config.translationLocales,
         }
-      : null
+      : null;
 
   return function BulkUploadPage() {
-    const { locale: adminLocale } = useLocale()
-    const lang = adminLocale || "en"
-    const labels = resolveLabels(config.languages, lang)
-    const fileInputRef = useRef<HTMLInputElement>(null)
-    const [options, setOptions] = useState<Record<string, ContentItem[]>>({})
-    const [terms, setTerms] = useState<Record<string, TaxonomyTerm[]>>({})
-    const [shared, setShared] = useState<Record<string, string>>({})
+    const { locale: adminLocale } = useLocale();
+    const lang = adminLocale || "en";
+    const labels = resolveLabels(config.languages, lang);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [options, setOptions] = useState<Record<string, ContentItem[]>>({});
+    const [terms, setTerms] = useState<Record<string, TaxonomyTerm[]>>({});
+    const [shared, setShared] = useState<Record<string, string>>({});
     const [createTranslations, setCreateTranslations] = useState(
       config.translationsDefault ?? true,
-    )
-    const [rows, setRows] = useState<UploadRow[]>([])
-    const [locales, setLocales] = useState<ResolvedLocales | null>(
-      staticLocales,
-    )
-    const [loading, setLoading] = useState(
-      sharedFields.length > 0 || staticLocales === null,
-    )
-    const [loadError, setLoadError] = useState<string | null>(null)
-    const [reloadKey, setReloadKey] = useState(0)
-    const [skippedCount, setSkippedCount] = useState(0)
-    const [isImporting, setIsImporting] = useState(false)
-    const [isDragging, setIsDragging] = useState(false)
-    const dragDepth = useRef(0)
-    const [view, setView] = useState<QueueView>(
-      () => storedView() ?? config.defaultView ?? "list",
-    )
+    );
+    const [rows, setRows] = useState<UploadRow[]>([]);
+    const [locales, setLocales] = useState<ResolvedLocales | null>(staticLocales);
+    const [loading, setLoading] = useState(sharedFields.length > 0 || staticLocales === null);
+    const [loadError, setLoadError] = useState<string | null>(null);
+    const [reloadKey, setReloadKey] = useState(0);
+    const [skippedCount, setSkippedCount] = useState(0);
+    const [isImporting, setIsImporting] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
+    const dragDepth = useRef(0);
+    const [view, setView] = useState<QueueView>(() => storedView() ?? config.defaultView ?? "list");
 
     const changeView = (next: QueueView) => {
-      setView(next)
+      setView(next);
       try {
-        localStorage.setItem(VIEW_STORAGE_KEY, next)
+        localStorage.setItem(VIEW_STORAGE_KEY, next);
       } catch {
         // Storage can be unavailable (private browsing); the toggle still works.
       }
-    }
+    };
 
     useEffect(() => {
-      if (sharedFields.length === 0 && staticLocales !== null) return
-      let cancelled = false
-      setLoading(true)
-      setLoadError(null)
+      if (sharedFields.length === 0 && staticLocales !== null) return;
+      let cancelled = false;
+      setLoading(true);
+      setLoadError(null);
       const load = async () => {
-        let resolved = staticLocales
+        let resolved = staticLocales;
         if (!resolved) {
-          const manifest = await fetchManifest()
-          const primary = config.primaryLocale ?? manifest.i18n?.defaultLocale
+          const manifest = await fetchManifest();
+          const primary = config.primaryLocale ?? manifest.i18n?.defaultLocale;
           resolved = {
             primary,
             translations:
               config.translationLocales ??
-              (manifest.i18n
-                ? manifest.i18n.locales.filter((locale) => locale !== primary)
-                : []),
-          }
+              (manifest.i18n ? manifest.i18n.locales.filter((locale) => locale !== primary) : []),
+          };
         }
-        const primary = resolved.primary
+        const primary = resolved.primary;
         const [collectionResults, taxonomyResults] = await Promise.all([
           Promise.all(
             collectionFields.map(async (field) => {
-              const entries = await loadAllEntries(field.collection, primary)
-              const filtered = (
-                field.filter ? entries.filter(field.filter) : entries
-              ).sort((a, b) =>
-                contentLabel(a, field.labelKeys).localeCompare(
-                  contentLabel(b, field.labelKeys),
-                  primary,
-                ),
-              )
-              return [field.name, filtered] as const
+              const entries = await loadAllEntries(field.collection, primary);
+              const filtered = (field.filter ? entries.filter(field.filter) : entries).sort(
+                (a, b) =>
+                  contentLabel(a, field.labelKeys).localeCompare(
+                    contentLabel(b, field.labelKeys),
+                    primary,
+                  ),
+              );
+              return [field.name, filtered] as const;
             }),
           ),
           Promise.all(
             taxonomyFields.map(async (field) => {
               const items = await fetchTerms(field.taxonomy, {
                 locale: primary,
-              })
-              return [field.name, items] as const
+              });
+              return [field.name, items] as const;
             }),
           ),
-        ])
-        return { resolved, collectionResults, taxonomyResults }
-      }
+        ]);
+        return { resolved, collectionResults, taxonomyResults };
+      };
       load()
         .then(({ resolved, collectionResults, taxonomyResults }) => {
-          if (cancelled) return
-          setLocales(resolved)
-          setOptions(Object.fromEntries(collectionResults))
-          setTerms(Object.fromEntries(taxonomyResults))
+          if (cancelled) return;
+          setLocales(resolved);
+          setOptions(Object.fromEntries(collectionResults));
+          setTerms(Object.fromEntries(taxonomyResults));
           setShared((current) => {
-            const next = { ...current }
+            const next = { ...current };
             for (const [name, items] of taxonomyResults) {
-              const field = taxonomyFields.find(
-                (candidate) => candidate.name === name,
-              )
+              const field = taxonomyFields.find((candidate) => candidate.name === name);
               next[name] =
                 next[name] ||
-                (items.find((term) => term.slug === field?.defaultSlug)?.id ??
-                  items[0]?.id ??
-                  "")
+                (items.find((term) => term.slug === field?.defaultSlug)?.id ?? items[0]?.id ?? "");
             }
-            return next
-          })
+            return next;
+          });
         })
         .catch((error: unknown) => {
           if (!cancelled) {
-            setLoadError(error instanceof Error ? error.message : String(error))
+            setLoadError(error instanceof Error ? error.message : String(error));
           }
         })
         .finally(() => {
-          if (!cancelled) setLoading(false)
-        })
+          if (!cancelled) setLoading(false);
+        });
       return () => {
-        cancelled = true
-      }
-    }, [reloadKey])
+        cancelled = true;
+      };
+    }, [reloadKey]);
 
     const addFiles = useCallback((files: File[]) => {
-      const accepted = imagesOnly
-        ? files.filter((file) => file.type.startsWith("image/"))
-        : files
-      setSkippedCount(files.length - accepted.length)
+      const accepted = imagesOnly ? files.filter((file) => file.type.startsWith("image/")) : files;
+      setSkippedCount(files.length - accepted.length);
       setRows((current) => {
-        const existing = new Set(current.map((row) => row.id))
+        const existing = new Set(current.map((row) => row.id));
         const additions = accepted
           .filter((file) => !existing.has(rowKey(file)))
           .map((file) => ({
@@ -443,93 +407,81 @@ export function createBulkUploadPage(
             title: titleFromFilename(file.name),
             values: initialRowValues(rowFields),
             status: "queued" as const,
-          }))
-        return [...current, ...additions]
-      })
-      if (fileInputRef.current) fileInputRef.current.value = ""
-    }, [])
+          }));
+        return [...current, ...additions];
+      });
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }, []);
 
     const patchRow = useCallback((id: string, patch: Partial<UploadRow>) => {
-      setRows((current) =>
-        current.map((row) => (row.id === id ? { ...row, ...patch } : row)),
-      )
-    }, [])
+      setRows((current) => current.map((row) => (row.id === id ? { ...row, ...patch } : row)));
+    }, []);
 
     const hasInvalidRows = rows.some(
       (row) =>
         !row.title.trim() ||
-        rowFields.some(
-          (field) => !isRowFieldValid(field, row.values[field.name] ?? ""),
-        ),
-    )
+        rowFields.some((field) => !isRowFieldValid(field, row.values[field.name] ?? "")),
+    );
     const hasIncompleteShared =
-      collectionFields.some(
-        (field) => !field.noneLabel && !shared[field.name],
-      ) ||
+      collectionFields.some((field) => !field.noneLabel && !shared[field.name]) ||
       taxonomyFields.some(
-        (field) =>
-          !field.optional &&
-          !shared[field.name] &&
-          (terms[field.name]?.length ?? 0) > 0,
-      )
+        (field) => !field.optional && !shared[field.name] && (terms[field.name]?.length ?? 0) > 0,
+      );
     const canImport =
       !loading &&
       !isImporting &&
       rows.some((row) => row.status !== "done") &&
       !hasIncompleteShared &&
-      !hasInvalidRows
+      !hasInvalidRows;
 
-    const translationLocales = locales?.translations ?? []
+    const translationLocales = locales?.translations ?? [];
 
     const importRows = async () => {
-      if (!canImport || !locales) return
-      setIsImporting(true)
-      const pending = rows.filter((row) => row.status !== "done")
+      if (!canImport || !locales) return;
+      setIsImporting(true);
+      const pending = rows.filter((row) => row.status !== "done");
       const sharedValues = Object.fromEntries(
         collectionFields.map((field) => [field.name, shared[field.name] ?? ""]),
-      )
+      );
 
       for (const initial of pending) {
-        const working = { ...initial, error: undefined }
+        const working = { ...initial, error: undefined };
         try {
           if (!working.media) {
-            patchRow(working.id, { status: "uploading", error: undefined })
-            working.media = await uploadMedia(working.file)
-            patchRow(working.id, { media: working.media })
+            patchRow(working.id, { status: "uploading", error: undefined });
+            working.media = await uploadMedia(working.file);
+            patchRow(working.id, { media: working.media });
           }
 
-          patchRow(working.id, { status: "creating" })
+          patchRow(working.id, { status: "creating" });
           const data = config.buildData({
             media: working.media,
             title: working.title.trim(),
             row: working.values,
             shared: sharedValues,
-          })
+          });
 
           if (!working.primaryEntryId) {
             const primary = await createContent(config.collection, {
               data,
               status: "draft",
               locale: locales.primary,
-            })
-            working.primaryEntryId = primary.id
-            patchRow(working.id, { primaryEntryId: primary.id })
+            });
+            working.primaryEntryId = primary.id;
+            patchRow(working.id, { primaryEntryId: primary.id });
           }
 
           for (const field of taxonomyFields) {
-            const termId = shared[field.name]
+            const termId = shared[field.name];
             if (termId) {
-              await assignTerms(
-                config.collection,
-                working.primaryEntryId,
-                field.taxonomy,
-                [termId],
-              )
+              await assignTerms(config.collection, working.primaryEntryId, field.taxonomy, [
+                termId,
+              ]);
             }
           }
 
           if (createTranslations && translationLocales.length > 0) {
-            const created = { ...working.translationIds }
+            const created = { ...working.translationIds };
             for (const locale of translationLocales) {
               if (!created[locale]) {
                 const translation = await createContent(config.collection, {
@@ -537,10 +489,10 @@ export function createBulkUploadPage(
                   status: "draft",
                   locale,
                   translationOf: working.primaryEntryId,
-                })
-                created[locale] = translation.id
-                working.translationIds = created
-                patchRow(working.id, { translationIds: { ...created } })
+                });
+                created[locale] = translation.id;
+                working.translationIds = created;
+                patchRow(working.id, { translationIds: { ...created } });
               }
             }
           }
@@ -551,7 +503,7 @@ export function createBulkUploadPage(
             media: working.media,
             primaryEntryId: working.primaryEntryId,
             translationIds: working.translationIds,
-          })
+          });
         } catch (error: unknown) {
           patchRow(working.id, {
             status: "error",
@@ -559,17 +511,15 @@ export function createBulkUploadPage(
             media: working.media,
             primaryEntryId: working.primaryEntryId,
             translationIds: working.translationIds,
-          })
+          });
         }
       }
-      setIsImporting(false)
-    }
+      setIsImporting(false);
+    };
 
-    const hasErrors = rows.some((row) => row.status === "error")
+    const hasErrors = rows.some((row) => row.status === "error");
     const editLabel = (locale: string | undefined) =>
-      labels.edit
-        .replace("{locale}", locale ? locale.toUpperCase() : "")
-        .replace(/\s{2,}/g, " ")
+      labels.edit.replace("{locale}", locale ? locale.toUpperCase() : "").replace(/\s{2,}/g, " ");
 
     return (
       <main className="ebu-main">
@@ -579,11 +529,7 @@ export function createBulkUploadPage(
               {labels.eyebrow}
             </p>
           )}
-          <Text
-            variant="heading1"
-            as="h1"
-            DANGEROUS_className="text-balance tracking-tight"
-          >
+          <Text variant="heading1" as="h1" DANGEROUS_className="text-balance tracking-tight">
             {labels.title}
           </Text>
           <Text variant="secondary" DANGEROUS_className="max-w-2xl text-pretty">
@@ -593,12 +539,7 @@ export function createBulkUploadPage(
 
         {loadError && (
           <div className="space-y-3">
-            <Banner
-              role="alert"
-              variant="error"
-              title={labels.loadError}
-              description={loadError}
-            />
+            <Banner role="alert" variant="error" title={labels.loadError} description={loadError} />
             <Button
               type="button"
               variant="secondary"
@@ -621,9 +562,7 @@ export function createBulkUploadPage(
                     <Select
                       key={field.name}
                       label={resolveText(field.label, lang)}
-                      placeholder={
-                        resolveText(field.placeholder, lang) || undefined
-                      }
+                      placeholder={resolveText(field.placeholder, lang) || undefined}
                       items={(terms[field.name] ?? []).map((term) => ({
                         value: term.id,
                         label: term.label,
@@ -639,7 +578,7 @@ export function createBulkUploadPage(
                       }
                       size="lg"
                     />
-                  )
+                  );
                 }
                 const noneItem = field.noneLabel
                   ? [
@@ -648,14 +587,12 @@ export function createBulkUploadPage(
                         label: resolveText(field.noneLabel, lang),
                       },
                     ]
-                  : []
+                  : [];
                 return (
                   <Select
                     key={field.name}
                     label={resolveText(field.label, lang)}
-                    placeholder={
-                      resolveText(field.placeholder, lang) || undefined
-                    }
+                    placeholder={resolveText(field.placeholder, lang) || undefined}
                     items={[
                       ...noneItem,
                       ...(options[field.name] ?? []).map((entry) => ({
@@ -665,24 +602,19 @@ export function createBulkUploadPage(
                           : contentLabel(entry, field.labelKeys),
                       })),
                     ]}
-                    value={
-                      shared[field.name] ||
-                      (field.noneLabel ? NONE_VALUE : null)
-                    }
+                    value={shared[field.name] || (field.noneLabel ? NONE_VALUE : null)}
                     loading={loading}
                     disabled={loading || isImporting}
                     onValueChange={(value) =>
                       setShared((current) => ({
                         ...current,
                         [field.name]:
-                          typeof value === "string" && value !== NONE_VALUE
-                            ? value
-                            : "",
+                          typeof value === "string" && value !== NONE_VALUE ? value : "",
                       }))
                     }
                     size="lg"
                   />
-                )
+                );
               })}
               {translationLocales.length > 0 && (
                 <div className="ebu-span-full">
@@ -691,9 +623,7 @@ export function createBulkUploadPage(
                     controlFirst
                     checked={createTranslations}
                     disabled={isImporting}
-                    onCheckedChange={(checked) =>
-                      setCreateTranslations(checked)
-                    }
+                    onCheckedChange={(checked) => setCreateTranslations(checked)}
                   />
                 </div>
               )}
@@ -734,24 +664,24 @@ export function createBulkUploadPage(
           </div>
           <div
             onDragEnter={(event) => {
-              event.preventDefault()
-              dragDepth.current += 1
-              setIsDragging(true)
+              event.preventDefault();
+              dragDepth.current += 1;
+              setIsDragging(true);
             }}
             onDragOver={(event) => event.preventDefault()}
             onDragLeave={() => {
-              dragDepth.current -= 1
+              dragDepth.current -= 1;
               if (dragDepth.current <= 0) {
-                dragDepth.current = 0
-                setIsDragging(false)
+                dragDepth.current = 0;
+                setIsDragging(false);
               }
             }}
             onDrop={(event) => {
-              event.preventDefault()
-              dragDepth.current = 0
-              setIsDragging(false)
-              if (isImporting) return
-              addFiles([...event.dataTransfer.files])
+              event.preventDefault();
+              dragDepth.current = 0;
+              setIsDragging(false);
+              if (isImporting) return;
+              addFiles([...event.dataTransfer.files]);
             }}
             className={`ebu-dropzone p-1 ${
               isDragging
@@ -791,28 +721,23 @@ export function createBulkUploadPage(
             <Banner
               role="status"
               variant="alert"
-              description={labels.skipped.replace(
-                "{count}",
-                String(skippedCount),
-              )}
+              description={labels.skipped.replace("{count}", String(skippedCount))}
             />
           )}
 
           {rows.length > 0 ? (
             <div className={view === "grid" ? "ebu-grid" : "space-y-3"}>
               {rows.map((row, index) => {
-                const editable = !isImporting && row.status !== "done"
+                const editable = !isImporting && row.status !== "done";
                 const titleInput = (
                   <Input
                     id={`bulk-upload-title-${index}`}
                     label={labels.itemTitle}
                     value={row.title}
                     disabled={!editable}
-                    onChange={(event) =>
-                      patchRow(row.id, { title: event.target.value })
-                    }
+                    onChange={(event) => patchRow(row.id, { title: event.target.value })}
                   />
-                )
+                );
                 const fieldInputs = rowFields.map((field) => (
                   <Input
                     key={field.name}
@@ -822,7 +747,7 @@ export function createBulkUploadPage(
                     value={row.values[field.name] ?? ""}
                     disabled={!editable}
                     onChange={(event) => {
-                      const value = event.target.value
+                      const value = event.target.value;
                       setRows((current) =>
                         current.map((item) =>
                           item.id === row.id
@@ -835,15 +760,15 @@ export function createBulkUploadPage(
                               }
                             : item,
                         ),
-                      )
+                      );
                     }}
                   />
-                ))
+                ));
                 const statusBadge = (
                   <Badge variant={statusVariant(row.status)} appearance="dot">
                     {labels[row.status]}
                   </Badge>
-                )
+                );
                 const removeButton =
                   !row.primaryEntryId && row.status !== "done" ? (
                     <Button
@@ -852,26 +777,24 @@ export function createBulkUploadPage(
                       variant="secondary-destructive"
                       disabled={isImporting}
                       onClick={() =>
-                        setRows((current) =>
-                          current.filter((item) => item.id !== row.id),
-                        )
+                        setRows((current) => current.filter((item) => item.id !== row.id))
                       }
                     >
                       {labels.remove}
                     </Button>
-                  ) : null
+                  ) : null;
                 const fileName = (
                   <div className="min-w-0 flex-1">
                     <Text variant="secondary" size="xs" truncate>
                       {row.file.name}
                     </Text>
                   </div>
-                )
+                );
                 const indexBadge = (
                   <Badge variant="secondary" className="tabular-nums">
                     {index + 1}
                   </Badge>
-                )
+                );
                 const editLinks =
                   row.status === "done" ? (
                     <div className="flex flex-wrap gap-2">
@@ -886,37 +809,27 @@ export function createBulkUploadPage(
                           {editLabel(locales?.primary)}
                         </LinkButton>
                       )}
-                      {Object.entries(row.translationIds ?? {}).map(
-                        ([locale, entryId]) => (
-                          <LinkButton
-                            key={locale}
-                            size="sm"
-                            variant="ghost"
-                            href={`/_emdash/admin/content/${config.collection}/${entryId}?locale=${locale}`}
-                          >
-                            {editLabel(locale)}
-                          </LinkButton>
-                        ),
-                      )}
+                      {Object.entries(row.translationIds ?? {}).map(([locale, entryId]) => (
+                        <LinkButton
+                          key={locale}
+                          size="sm"
+                          variant="ghost"
+                          href={`/_emdash/admin/content/${config.collection}/${entryId}?locale=${locale}`}
+                        >
+                          {editLabel(locale)}
+                        </LinkButton>
+                      ))}
                     </div>
-                  ) : null
+                  ) : null;
                 const errorBanner = row.error ? (
-                  <Banner
-                    role="alert"
-                    variant="error"
-                    description={row.error}
-                  />
-                ) : null
+                  <Banner role="alert" variant="error" description={row.error} />
+                ) : null;
 
                 if (view === "grid") {
                   return (
                     <article key={row.id}>
                       <LayerCard className="ebu-grid-card p-3">
-                        <FilePreview
-                          file={row.file}
-                          aspectRatio={aspectRatio}
-                          className="w-full"
-                        />
+                        <FilePreview file={row.file} aspectRatio={aspectRatio} className="w-full" />
                         <div className="flex items-center gap-2">
                           {indexBadge}
                           {fileName}
@@ -931,17 +844,14 @@ export function createBulkUploadPage(
                         {errorBanner}
                       </LayerCard>
                     </article>
-                  )
+                  );
                 }
 
                 return (
                   <article key={row.id}>
                     <LayerCard className="space-y-3 p-4">
                       <div className="ebu-row-grid">
-                        <FilePreview
-                          file={row.file}
-                          aspectRatio={aspectRatio}
-                        />
+                        <FilePreview file={row.file} aspectRatio={aspectRatio} />
                         <div className="min-w-0 space-y-3">
                           <div className="flex items-center gap-2">
                             {indexBadge}
@@ -952,10 +862,7 @@ export function createBulkUploadPage(
                           <div className="ebu-row-fields">
                             <div className="ebu-field-title">{titleInput}</div>
                             {fieldInputs.map((input, fieldIndex) => (
-                              <div
-                                key={rowFields[fieldIndex]?.name}
-                                className="ebu-field-extra"
-                              >
+                              <div key={rowFields[fieldIndex]?.name} className="ebu-field-extra">
                                 {input}
                               </div>
                             ))}
@@ -966,21 +873,15 @@ export function createBulkUploadPage(
                       {errorBanner}
                     </LayerCard>
                   </article>
-                )
+                );
               })}
             </div>
           ) : null}
         </section>
 
         <LayerCard className="sticky bottom-4 z-10 flex flex-col gap-3 bg-kumo-base/95 p-4 shadow-lg backdrop-blur sm:flex-row sm:items-center sm:justify-between">
-          <Text
-            variant="secondary"
-            size="sm"
-            DANGEROUS_className="text-pretty tabular-nums"
-          >
-            {!canImport &&
-            !isImporting &&
-            rows.some((row) => row.status !== "done")
+          <Text variant="secondary" size="sm" DANGEROUS_className="text-pretty tabular-nums">
+            {!canImport && !isImporting && rows.some((row) => row.status !== "done")
               ? labels.incomplete
               : `${rows.filter((row) => row.status === "done").length}/${rows.length}`}
           </Text>
@@ -992,43 +893,33 @@ export function createBulkUploadPage(
             disabled={!canImport}
             onClick={() => void importRows()}
           >
-            {isImporting
-              ? labels.importing
-              : hasErrors
-                ? labels.retry
-                : labels.import}
+            {isImporting ? labels.importing : hasErrors ? labels.retry : labels.import}
           </Button>
         </LayerCard>
       </main>
-    )
-  }
+    );
+  };
 }
 
 export interface FieldWidgetProps {
-  value: unknown
-  onChange: (value: unknown) => void
-  label: string
-  id: string
-  required?: boolean
+  value: unknown;
+  onChange: (value: unknown) => void;
+  label: string;
+  id: string;
+  required?: boolean;
 }
 
 export interface MonthYearFieldOptions {
   /** Coerce stored values (for example legacy dates) to `YYYY-MM`; return undefined to clear. */
-  normalize?: (value: unknown) => string | undefined
+  normalize?: (value: unknown) => string | undefined;
 }
 
 export function createMonthYearField(
   options?: MonthYearFieldOptions,
 ): ComponentType<FieldWidgetProps> {
-  const normalize = options?.normalize ?? normalizeMonth
+  const normalize = options?.normalize ?? normalizeMonth;
 
-  return function MonthYearField({
-    value,
-    onChange,
-    label,
-    id,
-    required,
-  }: FieldWidgetProps) {
+  return function MonthYearField({ value, onChange, label, id, required }: FieldWidgetProps) {
     return (
       <Input
         id={id}
@@ -1039,27 +930,25 @@ export function createMonthYearField(
         size="lg"
         onChange={(event) => onChange(event.target.value || null)}
       />
-    )
-  }
+    );
+  };
 }
 
 export interface BulkUploadAdminOptions extends BulkUploadAdminConfig {
-  monthYearField?: MonthYearFieldOptions | boolean
+  monthYearField?: MonthYearFieldOptions | boolean;
 }
 
-export function createBulkUploadAdmin(
-  options: BulkUploadAdminOptions,
-): PluginAdminExports {
-  const { monthYearField, ...config } = options
+export function createBulkUploadAdmin(options: BulkUploadAdminOptions): PluginAdminExports {
+  const { monthYearField, ...config } = options;
   const exports: PluginAdminExports = {
     pages: { [config.path ?? "/bulk-upload"]: createBulkUploadPage(config) },
-  }
+  };
   if (monthYearField) {
     exports.fields = {
       "month-year": createMonthYearField(
         typeof monthYearField === "object" ? monthYearField : undefined,
       ),
-    }
+    };
   }
-  return exports
+  return exports;
 }

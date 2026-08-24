@@ -1,17 +1,13 @@
-import type {
-  FieldWidgetConfig,
-  PluginDescriptor,
-  ResolvedPlugin,
-} from "emdash"
-import { definePlugin } from "emdash"
+import type { FieldWidgetConfig, PluginDescriptor, ResolvedPlugin } from "emdash";
+import { definePlugin } from "emdash";
 
-const PLUGIN_ID = "emdash-plugin-bulk-upload"
-import { PLUGIN_VERSION } from "./version.ts"
+const PLUGIN_ID = "emdash-plugin-bulk-upload";
+import { PLUGIN_VERSION } from "./version.ts";
 
 export interface BulkUploadPage {
-  path?: string
-  label?: string
-  icon?: string
+  path?: string;
+  label?: string;
+  icon?: string;
 }
 
 export interface BulkUploadPluginOptions {
@@ -20,42 +16,39 @@ export interface BulkUploadPluginOptions {
    * `createBulkUploadAdmin()` from `emdash-plugin-bulk-upload/admin` with the
    * project-specific configuration (collections, field mapping, labels).
    */
-  adminEntry: string
+  adminEntry: string;
   /** Plugin id, when running more than one uploader. Defaults to `bulk-upload`. */
-  id?: string
+  id?: string;
   /** Admin navigation entry. Defaults to `/bulk-upload`, "Bulk upload", `upload` icon. */
-  page?: BulkUploadPage
+  page?: BulkUploadPage;
   /** Register the bundled `month-year` schema-field widget. */
-  monthYearWidget?: boolean | { label?: string }
+  monthYearWidget?: boolean | { label?: string };
 }
 
 interface ResolvedAdminPage {
-  path: string
-  label: string
-  icon?: string
+  path: string;
+  label: string;
+  icon?: string;
 }
 
 interface ResolvedAdminOptions {
-  id: string
-  pages: ResolvedAdminPage[]
-  fieldWidgets: FieldWidgetConfig[]
+  id: string;
+  pages: ResolvedAdminPage[];
+  fieldWidgets: FieldWidgetConfig[];
 }
 
-function resolveAdminOptions(
-  options: BulkUploadPluginOptions,
-): ResolvedAdminOptions {
+function resolveAdminOptions(options: BulkUploadPluginOptions): ResolvedAdminOptions {
   const fieldWidgets: FieldWidgetConfig[] = options.monthYearWidget
     ? [
         {
           name: "month-year",
           label:
-            (typeof options.monthYearWidget === "object" &&
-              options.monthYearWidget.label) ||
+            (typeof options.monthYearWidget === "object" && options.monthYearWidget.label) ||
             "Month and year",
           fieldTypes: ["string", "text"],
         },
       ]
-    : []
+    : [];
   return {
     id: options.id ?? PLUGIN_ID,
     pages: [
@@ -66,11 +59,11 @@ function resolveAdminOptions(
       },
     ],
     fieldWidgets,
-  }
+  };
 }
 
 export function bulkUpload(options: BulkUploadPluginOptions): PluginDescriptor {
-  const admin = resolveAdminOptions(options)
+  const admin = resolveAdminOptions(options);
   return {
     id: admin.id,
     version: PLUGIN_VERSION,
@@ -80,20 +73,16 @@ export function bulkUpload(options: BulkUploadPluginOptions): PluginDescriptor {
     adminEntry: options.adminEntry,
     adminPages: admin.pages,
     fieldWidgets: admin.fieldWidgets,
-  }
+  };
 }
 
-export function createPlugin(
-  options?: Partial<ResolvedAdminOptions>,
-): ResolvedPlugin {
+export function createPlugin(options?: Partial<ResolvedAdminOptions>): ResolvedPlugin {
   return definePlugin({
     id: options?.id ?? PLUGIN_ID,
     version: PLUGIN_VERSION,
     admin: {
-      pages: options?.pages ?? [
-        { path: "/bulk-upload", label: "Bulk upload", icon: "upload" },
-      ],
+      pages: options?.pages ?? [{ path: "/bulk-upload", label: "Bulk upload", icon: "upload" }],
       fieldWidgets: options?.fieldWidgets ?? [],
     },
-  })
+  });
 }

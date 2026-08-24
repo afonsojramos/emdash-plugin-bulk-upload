@@ -1,4 +1,4 @@
-import type { BulkUploadLabels } from "./shared.ts"
+import type { BulkUploadLabels } from "./shared.ts";
 
 /* Built-in admin-language catalogs, merged between the English defaults and
    the host's `languages` overrides. Lookup tries the full admin locale code
@@ -35,8 +35,7 @@ export const BUILT_IN_LANGUAGES: Record<string, Partial<BulkUploadLabels>> = {
   },
   ca: {
     title: "Càrrega en lot",
-    intro:
-      "Crea un esborrany revisat per a cada fitxer. No es publica res automàticament.",
+    intro: "Crea un esborrany revisat per a cada fitxer. No es publica res automàticament.",
     defaults: "Dades comunes",
     translations: "Crea esborranys de traducció enllaçats",
     files: "Fitxers",
@@ -95,8 +94,7 @@ export const BUILT_IN_LANGUAGES: Record<string, Partial<BulkUploadLabels>> = {
   },
   es: {
     title: "Carga en lote",
-    intro:
-      "Crea un borrador revisado por cada archivo. Nada se publica automáticamente.",
+    intro: "Crea un borrador revisado por cada archivo. Nada se publica automáticamente.",
     defaults: "Datos comunes",
     translations: "Crear borradores de traducción vinculados",
     files: "Archivos",
@@ -155,8 +153,7 @@ export const BUILT_IN_LANGUAGES: Record<string, Partial<BulkUploadLabels>> = {
   },
   fa: {
     title: "بارگذاری گروهی",
-    intro:
-      "برای هر پرونده یک پیش‌نویس برای بازبینی می‌سازد. هیچ‌چیز به‌صورت خودکار منتشر نمی‌شود.",
+    intro: "برای هر پرونده یک پیش‌نویس برای بازبینی می‌سازد. هیچ‌چیز به‌صورت خودکار منتشر نمی‌شود.",
     defaults: "اطلاعات مشترک",
     translations: "ایجاد پیش‌نویس‌های ترجمهٔ پیوندشده",
     files: "پرونده‌ها",
@@ -179,14 +176,12 @@ export const BUILT_IN_LANGUAGES: Record<string, Partial<BulkUploadLabels>> = {
     edit: "ویرایش پیش‌نویس {locale}",
     loadError: "بارگیری گزینه‌ها ممکن نشد.",
     reload: "تلاش دوباره",
-    incomplete:
-      "پیش از ایجاد پیش‌نویس‌ها، اطلاعات مشترک و جزئیات هر پرونده را کامل کنید.",
+    incomplete: "پیش از ایجاد پیش‌نویس‌ها، اطلاعات مشترک و جزئیات هر پرونده را کامل کنید.",
     skipped: "{count} پروندهٔ پشتیبانی‌نشده نادیده گرفته شد.",
   },
   fr: {
     title: "Téléversement groupé",
-    intro:
-      "Crée un brouillon à relire pour chaque fichier. Rien n'est publié automatiquement.",
+    intro: "Crée un brouillon à relire pour chaque fichier. Rien n'est publié automatiquement.",
     defaults: "Informations communes",
     translations: "Créer des brouillons de traduction liés",
     files: "Fichiers",
@@ -215,8 +210,7 @@ export const BUILT_IN_LANGUAGES: Record<string, Partial<BulkUploadLabels>> = {
   },
   hu: {
     title: "Tömeges feltöltés",
-    intro:
-      "Minden fájlhoz átnézendő piszkozatot készít. Semmi sem jelenik meg automatikusan.",
+    intro: "Minden fájlhoz átnézendő piszkozatot készít. Semmi sem jelenik meg automatikusan.",
     defaults: "Közös adatok",
     translations: "Összekapcsolt fordítási piszkozatok létrehozása",
     files: "Fájlok",
@@ -269,14 +263,12 @@ export const BUILT_IN_LANGUAGES: Record<string, Partial<BulkUploadLabels>> = {
     edit: "Edit draf {locale}",
     loadError: "Opsi tidak dapat dimuat.",
     reload: "Coba lagi",
-    incomplete:
-      "Lengkapi detail bersama dan detail setiap berkas sebelum membuat draf.",
+    incomplete: "Lengkapi detail bersama dan detail setiap berkas sebelum membuat draf.",
     skipped: "{count} berkas yang tidak didukung dilewati.",
   },
   ja: {
     title: "一括アップロード",
-    intro:
-      "ファイルごとにレビュー用の下書きを作成します。自動では何も公開されません。",
+    intro: "ファイルごとにレビュー用の下書きを作成します。自動では何も公開されません。",
     defaults: "共通情報",
     translations: "リンクされた翻訳の下書きを作成",
     files: "ファイル",
@@ -299,8 +291,7 @@ export const BUILT_IN_LANGUAGES: Record<string, Partial<BulkUploadLabels>> = {
     edit: "{locale} の下書きを編集",
     loadError: "オプションを読み込めませんでした。",
     reload: "再試行",
-    incomplete:
-      "下書きを作成する前に、共通情報と各ファイルの詳細を入力してください。",
+    incomplete: "下書きを作成する前に、共通情報と各ファイルの詳細を入力してください。",
     skipped: "未対応のファイル {count} 件をスキップしました。",
   },
   ko: {
@@ -328,14 +319,12 @@ export const BUILT_IN_LANGUAGES: Record<string, Partial<BulkUploadLabels>> = {
     edit: "{locale} 초안 편집",
     loadError: "옵션을 불러오지 못했습니다.",
     reload: "다시 시도",
-    incomplete:
-      "초안을 만들기 전에 공통 정보와 각 파일의 세부 정보를 입력하세요.",
+    incomplete: "초안을 만들기 전에 공통 정보와 각 파일의 세부 정보를 입력하세요.",
     skipped: "지원되지 않는 파일 {count}개를 건너뛰었습니다.",
   },
   nb: {
     title: "Masseopplasting",
-    intro:
-      "Oppretter et utkast til gjennomgang for hver fil. Ingenting publiseres automatisk.",
+    intro: "Oppretter et utkast til gjennomgang for hver fil. Ingenting publiseres automatisk.",
     defaults: "Felles opplysninger",
     translations: "Opprett koblede oversettelsesutkast",
     files: "Filer",
@@ -358,8 +347,7 @@ export const BUILT_IN_LANGUAGES: Record<string, Partial<BulkUploadLabels>> = {
     edit: "Rediger {locale}-utkast",
     loadError: "Kunne ikke laste alternativene.",
     reload: "Prøv igjen",
-    incomplete:
-      "Fyll ut felles opplysninger og detaljene for hver fil før du oppretter utkast.",
+    incomplete: "Fyll ut felles opplysninger og detaljene for hver fil før du oppretter utkast.",
     skipped: "{count} filer som ikke støttes ble hoppet over.",
   },
   nl: {
@@ -394,8 +382,7 @@ export const BUILT_IN_LANGUAGES: Record<string, Partial<BulkUploadLabels>> = {
   },
   pl: {
     title: "Przesyłanie zbiorcze",
-    intro:
-      "Tworzy szkic do przeglądu dla każdego pliku. Nic nie jest publikowane automatycznie.",
+    intro: "Tworzy szkic do przeglądu dla każdego pliku. Nic nie jest publikowane automatycznie.",
     defaults: "Wspólne dane",
     translations: "Utwórz powiązane szkice tłumaczeń",
     files: "Pliki",
@@ -418,14 +405,12 @@ export const BUILT_IN_LANGUAGES: Record<string, Partial<BulkUploadLabels>> = {
     edit: "Edytuj szkic {locale}",
     loadError: "Nie udało się wczytać opcji.",
     reload: "Spróbuj ponownie",
-    incomplete:
-      "Uzupełnij wspólne dane i szczegóły każdego pliku przed utworzeniem szkiców.",
+    incomplete: "Uzupełnij wspólne dane i szczegóły każdego pliku przed utworzeniem szkiców.",
     skipped: "Pominięto {count} nieobsługiwanych plików.",
   },
   pt: {
     title: "Carregamento em lote",
-    intro:
-      "Cria um rascunho revisto por ficheiro. Nada é publicado automaticamente.",
+    intro: "Cria um rascunho revisto por ficheiro. Nada é publicado automaticamente.",
     defaults: "Dados comuns",
     translations: "Criar rascunhos de tradução ligados",
     files: "Ficheiros",
@@ -448,14 +433,12 @@ export const BUILT_IN_LANGUAGES: Record<string, Partial<BulkUploadLabels>> = {
     edit: "Editar rascunho {locale}",
     loadError: "Não foi possível carregar as opções.",
     reload: "Tentar novamente",
-    incomplete:
-      "Preenche os dados comuns e os detalhes de cada ficheiro antes de criar rascunhos.",
+    incomplete: "Preenche os dados comuns e os detalhes de cada ficheiro antes de criar rascunhos.",
     skipped: "Foram ignorados {count} ficheiros não suportados.",
   },
   "pt-BR": {
     title: "Envio em lote",
-    intro:
-      "Cria um rascunho revisado para cada arquivo. Nada é publicado automaticamente.",
+    intro: "Cria um rascunho revisado para cada arquivo. Nada é publicado automaticamente.",
     defaults: "Dados comuns",
     translations: "Criar rascunhos de tradução vinculados",
     files: "Arquivos",
@@ -478,14 +461,12 @@ export const BUILT_IN_LANGUAGES: Record<string, Partial<BulkUploadLabels>> = {
     edit: "Editar rascunho {locale}",
     loadError: "Não foi possível carregar as opções.",
     reload: "Tentar novamente",
-    incomplete:
-      "Preencha os dados comuns e os detalhes de cada arquivo antes de criar rascunhos.",
+    incomplete: "Preencha os dados comuns e os detalhes de cada arquivo antes de criar rascunhos.",
     skipped: "{count} arquivos não suportados foram ignorados.",
   },
   sr: {
     title: "Masovno otpremanje",
-    intro:
-      "Pravi nacrt za pregled za svaku datoteku. Ništa se ne objavljuje automatski.",
+    intro: "Pravi nacrt za pregled za svaku datoteku. Ništa se ne objavljuje automatski.",
     defaults: "Zajednički podaci",
     translations: "Napravi povezane nacrte prevoda",
     files: "Datoteke",
@@ -508,14 +489,12 @@ export const BUILT_IN_LANGUAGES: Record<string, Partial<BulkUploadLabels>> = {
     edit: "Uredi nacrt {locale}",
     loadError: "Učitavanje opcija nije uspelo.",
     reload: "Pokušaj ponovo",
-    incomplete:
-      "Popuni zajedničke podatke i detalje svake datoteke pre pravljenja nacrta.",
+    incomplete: "Popuni zajedničke podatke i detalje svake datoteke pre pravljenja nacrta.",
     skipped: "Preskočeno je {count} nepodržanih datoteka.",
   },
   sv: {
     title: "Massuppladdning",
-    intro:
-      "Skapar ett utkast att granska för varje fil. Inget publiceras automatiskt.",
+    intro: "Skapar ett utkast att granska för varje fil. Inget publiceras automatiskt.",
     defaults: "Gemensamma uppgifter",
     translations: "Skapa länkade översättningsutkast",
     files: "Filer",
@@ -538,8 +517,7 @@ export const BUILT_IN_LANGUAGES: Record<string, Partial<BulkUploadLabels>> = {
     edit: "Redigera {locale}-utkast",
     loadError: "Alternativen kunde inte läsas in.",
     reload: "Försök igen",
-    incomplete:
-      "Fyll i de gemensamma uppgifterna och varje fils detaljer innan du skapar utkast.",
+    incomplete: "Fyll i de gemensamma uppgifterna och varje fils detaljer innan du skapar utkast.",
     skipped: "{count} filer som inte stöds hoppades över.",
   },
   th: {
@@ -596,14 +574,12 @@ export const BUILT_IN_LANGUAGES: Record<string, Partial<BulkUploadLabels>> = {
     edit: "{locale} taslağını düzenle",
     loadError: "Seçenekler yüklenemedi.",
     reload: "Yeniden dene",
-    incomplete:
-      "Taslak oluşturmadan önce ortak bilgileri ve her dosyanın ayrıntılarını doldur.",
+    incomplete: "Taslak oluşturmadan önce ortak bilgileri ve her dosyanın ayrıntılarını doldur.",
     skipped: "Desteklenmeyen {count} dosya atlandı.",
   },
   uk: {
     title: "Масове завантаження",
-    intro:
-      "Створює чернетку для перегляду для кожного файлу. Нічого не публікується автоматично.",
+    intro: "Створює чернетку для перегляду для кожного файлу. Нічого не публікується автоматично.",
     defaults: "Спільні дані",
     translations: "Створити пов'язані чернетки перекладів",
     files: "Файли",
@@ -626,8 +602,7 @@ export const BUILT_IN_LANGUAGES: Record<string, Partial<BulkUploadLabels>> = {
     edit: "Редагувати чернетку {locale}",
     loadError: "Не вдалося завантажити параметри.",
     reload: "Спробувати ще раз",
-    incomplete:
-      "Заповніть спільні дані та деталі кожного файлу перед створенням чернеток.",
+    incomplete: "Заповніть спільні дані та деталі кожного файлу перед створенням чернеток.",
     skipped: "Пропущено файлів, які не підтримуються: {count}.",
   },
   "zh-CN": {
@@ -686,4 +661,4 @@ export const BUILT_IN_LANGUAGES: Record<string, Partial<BulkUploadLabels>> = {
     incomplete: "建立草稿前，請填寫共用資訊和每個檔案的詳細資訊。",
     skipped: "已略過 {count} 個不支援的檔案。",
   },
-}
+};
