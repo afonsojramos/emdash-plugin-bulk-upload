@@ -1,0 +1,5 @@
+# pnpm 11 reads settings from here rather than package.json#pnpm.
+# Dev-only transitive dependencies that need their postinstall builds.
+allowBuilds:
+  better-sqlite3: true
+  esbuild: true
