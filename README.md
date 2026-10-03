@@ -26,6 +26,14 @@ npm install emdash-plugin-bulk-upload
 
 `emdash`, `@emdash-cms/admin`, `@cloudflare/kumo`, and `react` are peer dependencies; an Emdash project already has all of them except possibly Kumo.
 
+## EmDash compatibility
+
+Supports EmDash and `@emdash-cms/admin` versions `>=0.32.0 <2`. The uploader has been browser-tested with EmDash 1.1.0, including relation fields, taxonomy assignment, retry without re-uploading, and the month/year widget in the native editor.
+
+Keep returning reference IDs from `buildData` as in the example below. The uploader reads the collection manifest and moves relation-bound fields into the content API's `references` payload automatically. Unbound legacy reference fields remain in `data`, so host configuration does not need separate 0.x and 1.x payload builders.
+
+This is a native React plugin distributed through npm, not a sandboxed plugin for the official registry.
+
 ## Usage
 
 The plugin is configured in two places: the **descriptor** in your Astro config, and an **admin entry** module in your project where the page is configured (it lives in your project so the config can include functions).
@@ -74,7 +82,9 @@ export const { pages, fields } = createBulkUploadAdmin({
       optionLabel: (entry, lang) =>
         contentLabel(entry, ["city"]) +
         (entry.data.activity_status === "inactive"
-          ? lang.startsWith("pt") ? " (inativo)" : " (inactive)"
+          ? lang.startsWith("pt")
+            ? " (inativo)"
+            : " (inactive)"
           : ""),
     },
     {
@@ -92,9 +102,7 @@ export const { pages, fields } = createBulkUploadAdmin({
       noneLabel: { en: "No author", pt: "Sem autoria" },
     },
   ],
-  rowFields: [
-    { name: "date", label: { en: "Month and year", pt: "Mês e ano" }, type: "month" },
-  ],
+  rowFields: [{ name: "date", label: { en: "Month and year", pt: "Mês e ano" }, type: "month" }],
   buildData: ({ media, title, row, shared }) => ({
     title,
     description: "",
@@ -129,32 +137,32 @@ No Tailwind configuration is needed; the admin's prebuilt stylesheet does not in
 
 ### `bulkUpload(options)` (descriptor)
 
-| Option | Default | Description |
-| --- | --- | --- |
-| `adminEntry` | required | Module specifier of your admin entry |
-| `id` | `"emdash-plugin-bulk-upload"` | Plugin id, for running more than one uploader |
-| `page.path` | `"/bulk-upload"` | Admin page path (must match `path` in the admin config) |
-| `page.label` / `page.icon` | `"Bulk upload"` / `"upload"` | Navigation entry |
-| `monthYearWidget` | `false` | Register the `month-year` field widget (`true` or `{ label }`) |
+| Option                     | Default                       | Description                                                    |
+| -------------------------- | ----------------------------- | -------------------------------------------------------------- |
+| `adminEntry`               | required                      | Module specifier of your admin entry                           |
+| `id`                       | `"emdash-plugin-bulk-upload"` | Plugin id, for running more than one uploader                  |
+| `page.path`                | `"/bulk-upload"`              | Admin page path (must match `path` in the admin config)        |
+| `page.label` / `page.icon` | `"Bulk upload"` / `"upload"`  | Navigation entry                                               |
+| `monthYearWidget`          | `false`                       | Register the `month-year` field widget (`true` or `{ label }`) |
 
 ### `createBulkUploadAdmin(options)` (admin entry)
 
-| Option | Default | Description |
-| --- | --- | --- |
-| `collection` | required | Collection the drafts are created in |
-| `primaryLocale` | site default locale | Locale of the primary drafts |
-| `translationLocales` | every other site locale | Locales that get linked translation drafts; `[]` disables them |
-| `translationsDefault` | `true` | Initial state of the translation checkbox |
-| `sharedFields` | `[]` | Selects shown once and applied to every entry (see below) |
-| `rowFields` | `[]` | Extra per-file inputs (`text` or `month`) |
-| `buildData` | required | `({ media, title, row, shared }) => data` payload for the entry |
-| `titleFromFilename` | humanized filename | Initial title for each file |
-| `accept` | `"image/*"` | File input accept attribute |
-| `previewAspectRatio` | `"1 / 1"` | CSS aspect-ratio of the thumbnails |
-| `defaultView` | `"list"` | Initial queue layout (`"list"` or `"grid"`); the user's toggle choice is remembered per browser |
-| `languages` | — | Per-language label overrides (English defaults built in) |
-| `monthYearField` | `false` | Export the `month-year` widget (`true` or `{ normalize }`) |
-| `path` | `"/bulk-upload"` | Page key; must match the descriptor |
+| Option                | Default                 | Description                                                                                     |
+| --------------------- | ----------------------- | ----------------------------------------------------------------------------------------------- |
+| `collection`          | required                | Collection the drafts are created in                                                            |
+| `primaryLocale`       | site default locale     | Locale of the primary drafts                                                                    |
+| `translationLocales`  | every other site locale | Locales that get linked translation drafts; `[]` disables them                                  |
+| `translationsDefault` | `true`                  | Initial state of the translation checkbox                                                       |
+| `sharedFields`        | `[]`                    | Selects shown once and applied to every entry (see below)                                       |
+| `rowFields`           | `[]`                    | Extra per-file inputs (`text` or `month`)                                                       |
+| `buildData`           | required                | `({ media, title, row, shared }) => data` payload for the entry                                 |
+| `titleFromFilename`   | humanized filename      | Initial title for each file                                                                     |
+| `accept`              | `"image/*"`             | File input accept attribute                                                                     |
+| `previewAspectRatio`  | `"1 / 1"`               | CSS aspect-ratio of the thumbnails                                                              |
+| `defaultView`         | `"list"`                | Initial queue layout (`"list"` or `"grid"`); the user's toggle choice is remembered per browser |
+| `languages`           | `undefined`             | Per-language label overrides (English defaults built in)                                        |
+| `monthYearField`      | `false`                 | Export the `month-year` widget (`true` or `{ normalize }`)                                      |
+| `path`                | `"/bulk-upload"`        | Page key; must match the descriptor                                                             |
 
 **Shared fields** come in two kinds. `kind: "collection"` loads options from another collection and passes the selected entry id to `buildData` under `shared[name]`; add `noneLabel` to make it optional. `kind: "taxonomy"` loads taxonomy terms and assigns the selected term to each created primary entry after creation; set `optional: true` to allow importing without a term, and a taxonomy with no terms never blocks the import. Labels and placeholders accept a plain string or a `{ lang: string }` map.
 

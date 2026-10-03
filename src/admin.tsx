@@ -21,6 +21,7 @@ import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Select } from "@cloudflare/kumo/components/select";
 import { Text } from "@cloudflare/kumo/components/text";
 import type { PluginAdminExports } from "emdash";
+import { contentPayload, type ContentFields } from "./content.ts";
 import { useCallback, useEffect, useRef, useState, type ComponentType } from "react";
 import {
   contentLabel,
@@ -303,7 +304,8 @@ export function createBulkUploadPage(config: BulkUploadAdminConfig): ComponentTy
     );
     const [rows, setRows] = useState<UploadRow[]>([]);
     const [locales, setLocales] = useState<ResolvedLocales | null>(staticLocales);
-    const [loading, setLoading] = useState(sharedFields.length > 0 || staticLocales === null);
+    const [contentFields, setContentFields] = useState<ContentFields>({});
+    const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState<string | null>(null);
     const [reloadKey, setReloadKey] = useState(0);
     const [skippedCount, setSkippedCount] = useState(0);
@@ -322,14 +324,15 @@ export function createBulkUploadPage(config: BulkUploadAdminConfig): ComponentTy
     };
 
     useEffect(() => {
-      if (sharedFields.length === 0 && staticLocales !== null) return;
       let cancelled = false;
       setLoading(true);
       setLoadError(null);
       const load = async () => {
+        const manifest = await fetchManifest();
+        const fields = manifest.collections[config.collection]?.fields;
+        if (!fields) throw new Error(`Collection "${config.collection}" was not found.`);
         let resolved = staticLocales;
         if (!resolved) {
-          const manifest = await fetchManifest();
           const primary = config.primaryLocale ?? manifest.i18n?.defaultLocale;
           resolved = {
             primary,
@@ -362,12 +365,13 @@ export function createBulkUploadPage(config: BulkUploadAdminConfig): ComponentTy
             }),
           ),
         ]);
-        return { resolved, collectionResults, taxonomyResults };
+        return { resolved, fields, collectionResults, taxonomyResults };
       };
       load()
-        .then(({ resolved, collectionResults, taxonomyResults }) => {
+        .then(({ resolved, fields, collectionResults, taxonomyResults }) => {
           if (cancelled) return;
           setLocales(resolved);
+          setContentFields(fields);
           setOptions(Object.fromEntries(collectionResults));
           setTerms(Object.fromEntries(taxonomyResults));
           setShared((current) => {
@@ -454,16 +458,19 @@ export function createBulkUploadPage(config: BulkUploadAdminConfig): ComponentTy
           }
 
           patchRow(working.id, { status: "creating" });
-          const data = config.buildData({
-            media: working.media,
-            title: working.title.trim(),
-            row: working.values,
-            shared: sharedValues,
-          });
+          const payload = contentPayload(
+            config.buildData({
+              media: working.media,
+              title: working.title.trim(),
+              row: working.values,
+              shared: sharedValues,
+            }),
+            contentFields,
+          );
 
           if (!working.primaryEntryId) {
             const primary = await createContent(config.collection, {
-              data,
+              ...payload,
               status: "draft",
               locale: locales.primary,
             });
@@ -485,7 +492,7 @@ export function createBulkUploadPage(config: BulkUploadAdminConfig): ComponentTy
             for (const locale of translationLocales) {
               if (!created[locale]) {
                 const translation = await createContent(config.collection, {
-                  data,
+                  ...payload,
                   status: "draft",
                   locale,
                   translationOf: working.primaryEntryId,

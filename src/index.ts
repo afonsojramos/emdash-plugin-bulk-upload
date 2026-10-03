@@ -33,6 +33,7 @@ interface ResolvedAdminPage {
 
 interface ResolvedAdminOptions {
   id: string;
+  entry: string;
   pages: ResolvedAdminPage[];
   fieldWidgets: FieldWidgetConfig[];
 }
@@ -51,6 +52,7 @@ function resolveAdminOptions(options: BulkUploadPluginOptions): ResolvedAdminOpt
     : [];
   return {
     id: options.id ?? PLUGIN_ID,
+    entry: options.adminEntry,
     pages: [
       {
         path: options.page?.path ?? "/bulk-upload",
@@ -69,7 +71,7 @@ export function bulkUpload(options: BulkUploadPluginOptions): PluginDescriptor {
     version: PLUGIN_VERSION,
     format: "native",
     entrypoint: "emdash-plugin-bulk-upload",
-    options: admin as unknown as Record<string, unknown>,
+    options: { ...admin },
     adminEntry: options.adminEntry,
     adminPages: admin.pages,
     fieldWidgets: admin.fieldWidgets,
@@ -81,6 +83,7 @@ export function createPlugin(options?: Partial<ResolvedAdminOptions>): ResolvedP
     id: options?.id ?? PLUGIN_ID,
     version: PLUGIN_VERSION,
     admin: {
+      entry: options?.entry,
       pages: options?.pages ?? [{ path: "/bulk-upload", label: "Bulk upload", icon: "upload" }],
       fieldWidgets: options?.fieldWidgets ?? [],
     },
