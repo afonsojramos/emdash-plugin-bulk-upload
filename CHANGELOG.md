@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/afonsojramos/emdash-plugin-bulk-upload/compare/emdash-plugin-bulk-upload-v0.2.0...emdash-plugin-bulk-upload-v0.2.1) (2026-10-04)
+
+
+### Bug Fixes
+
+* Support bulk uploads on emdash 1.x ([#2](https://github.com/afonsojramos/emdash-plugin-bulk-upload/issues/2)) ([7ff6940](https://github.com/afonsojramos/emdash-plugin-bulk-upload/commit/7ff694062dcb86fbe578e813942b8220dbc5506f))
+
 ## [0.2.0](https://github.com/afonsojramos/emdash-plugin-bulk-upload/compare/emdash-plugin-bulk-upload-v0.1.2...emdash-plugin-bulk-upload-v0.2.0) (2026-08-24)
 
 
